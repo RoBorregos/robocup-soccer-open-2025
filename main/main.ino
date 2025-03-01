@@ -15,77 +15,48 @@
 #include "motors.h"
 #include "constants.h"
 #include "Bno.h"
+#include "PID.h"
 
 
 float bno_angle = 0;
 unsigned long start_millis;
 
 BNO055 my_bno;
-/*
+
 Motors motors(
     MOTOR1_PWM, MOTOR1_IN1, MOTOR1_IN2,
     MOTOR2_PWM, MOTOR2_IN1, MOTOR2_IN2,
     MOTOR3_PWM, MOTOR3_IN1, MOTOR3_IN2,
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
-*/
 
 void setup() {
   Serial.begin(115200);
-
-    /*
-    motors.InitializeMotors();
-    my_bno.InitializeBNO();
-    start_millis = millis();
-    */
-
-  pinMode(30,OUTPUT);
-  pinMode(31,OUTPUT);
-  digitalWrite(30, LOW);
-  digitalWrite(31, LOW);
-  pinMode(3, OUTPUT);
-  analogWrite(3, 0);
-  delay(1000);
+  motors.InitializeMotors();
+  my_bno.InitializeBNO();
+  start_millis = millis();
 }
 
 void loop() {
-  Serial.println("Empezando movimiento");
-  digitalWrite(30, LOW);
-  digitalWrite(31, LOW);
-  analogWrite(3, 0);
-  delay(5000);
-  digitalWrite(30, LOW);
-  digitalWrite(31, LOW);
-  analogWrite(3, 0);
-
-
-  /*
+  motors.SetAllSpeeds(50);
   my_bno.GetBNOData();
   bno_angle = my_bno.GetYaw();
   Serial.println(bno_angle);
-  delay(1000);
-  
-    motors.SetAllSpeeds(125);
 
-    Serial.println("Moviendo hacia adelante");
-    motors.MoveForward();
-    delay(2000);
-    
-    Serial.println("Moviendo hacia atrás");
-    motors.MoveBackward();
-    delay(2000);
-    
-    Serial.println("Girando a la derecha");
-    motors.MoveRight();
-    delay(2000);
-    
-    Serial.println("Girando a la izquierda");
-    motors.MoveLeft();
-    delay(2000);
-    
-    Serial.println("Deteniendo motores");
-    motors.StopMotors();
-    delay(2000);
-  */
+  Serial.println("Mover hacia adelante");
+  motors.MoveForward();
+  delay(2000);
+
+  Serial.println("Mover hacia atras");
+  motors.MoveBackward();
+  delay(2000);
+
+  Serial.println("Mover hacia la izquierda");
+  motors.MoveLeft();
+  delay(2000);
+
+  Serial.println("Mover hacia la derecha");
+  motors.MoveRight();
+  delay(2000);
 
 }
 

@@ -11,6 +11,7 @@ Motors::Motors(uint8_t speed1, uint8_t in1_1, uint8_t in2_1, uint8_t speed2, uin
 
 void Motors::InitializeMotors()
 {
+    Serial.println("Inicializando motores...");
     motor1.InitializeMotor();
     motor2.InitializeMotor();
     motor3.InitializeMotor();
