@@ -12,6 +12,8 @@ void Motor::InitializeMotor()
 {
     pinMode(in1_, OUTPUT);
     pinMode(in2_, OUTPUT);
+    digitalWrite(in1_, LOW);
+    digitalWrite(in2_, LOW);
     pinMode(speed_, OUTPUT);
 };
 
