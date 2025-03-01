@@ -12,6 +12,8 @@ double PID::Calculate(double setpoint, double input)
     {
         double delta_time = (current_time - last_time_);
         double error = setpoint - input;
+        Serial.print("Error: ");
+        Serial.println(error);
         double total_error = error + last_error_;
         if (total_error > max_error_)
         {
@@ -27,6 +29,8 @@ double PID::Calculate(double setpoint, double input)
         double output = proportional + integral + derivative;
         last_error_ = error;
         last_time_ = current_time;
+        Serial.print("Output: ");
+        Serial.println(output);
         return output;
     }  
     return 0;

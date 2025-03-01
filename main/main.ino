@@ -20,8 +20,14 @@
 
 float bno_angle = 0;
 unsigned long start_millis;
+unsigned long current_millis;
+int setpoint = 90 ;
+int translation_angle = 0;
+int adjust_angle = 0;
 
 BNO055 my_bno;
+
+PID pid(1, 0.4 , 1.5, 400);
 
 Motors motors(
     MOTOR1_PWM, MOTOR1_IN1, MOTOR1_IN2,
@@ -37,39 +43,15 @@ void setup() {
 }
 
 void loop() {
-  motors.SetAllSpeeds(50);
+
   my_bno.GetBNOData();
-  bno_angle = my_bno.GetYaw();
-  Serial.println(bno_angle);
-
-  Serial.println("Mover hacia adelante");
-  motors.MoveForward();
-  delay(2000);
-
-  Serial.println("Mover hacia atras");
-  motors.MoveBackward();
-  delay(2000);
-
-  Serial.println("Mover hacia la izquierda");
-  motors.MoveLeft();
-  delay(2000);
-
-  Serial.println("Mover hacia la derecha");
-  motors.MoveRight();
-  delay(2000);
+  double current_yaw = my_bno.GetYaw();
+  Serial.print("Angulo del BNO: ");
+  Serial.println(current_yaw);
+  double correction = pid.Calculate(setpoint, current_yaw);
+  double speed_w = correction;
+  Serial.print("Velocidad corregida: ");
+  Serial.println(speed_w);
+  motors.MoveMotorsImu(setpoint, 100 , speed_w);
 
 }
-
-
-/*
-void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
-}
-
-void loop() {
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(200);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(200);
-}
-*/
