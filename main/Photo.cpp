@@ -9,8 +9,10 @@ bool Photo::InitializeADS() {
   ads_back.setGain(GAIN_FOUR);
   if(!ads_left.begin(0x48) || !ads_right.begin(0x49) || !ads_back.begin(0x4A)) {
     return false;
+    Serial.println("Photo iniciado correctamente");
   }
   return true;
+  Serial.println("Error de conexion");
 }
 
 double Photo::GetAverageRightValues() {
