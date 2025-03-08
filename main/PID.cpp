@@ -8,7 +8,7 @@ PID::PID(double kp, double ki, double kd, double max_error)
 double PID::Calculate(double setpoint, double input)
 {
     double current_time = millis();
-    if (current_time - last_time_ > 20)
+    if (current_time - last_time_ > 20) //20
     {
         double delta_time = (current_time - last_time_);
         double error = setpoint - input;

@@ -171,12 +171,29 @@ void Motors::MoveMotorsImu(double degree, uint8_t speed, double speed_w)
     float m3 = cos(((135 + degree) * PI / 180)) * speed + speed_w;
     float m4 = cos(((225 + degree) * PI / 180)) * speed + speed_w;
     float m1 = cos(((315 + degree) * PI / 180)) * speed + speed_w;
+
+    Serial.print("Direccion 1: ");
+    Serial.println(m1);
+    Serial.print("Direccion 2: ");
+    Serial.println(m2);
+    Serial.print("Direccion 3: ");
+    Serial.println(m3);
+    Serial.print("Direccion 4: ");
+    Serial.println(m4);
+
     int speedA = abs(int(m1));
     int speedB = abs(int(m2));
     int speedC = abs(int(m3));
     int speedD = abs(int(m4));
 
-
+    Serial.print("Motor 1: ");
+    Serial.println(speedA);
+    Serial.print("Motor 2: ");
+    Serial.println(speedB);
+    Serial.print("Motor 3: ");
+    Serial.println(speedC);
+    Serial.print("Motor 4: ");
+    Serial.println(speedD);
 
     analogWrite(motor1.GetSpeed(), speedA);
     analogWrite(motor2.GetSpeed(), speedB);
