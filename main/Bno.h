@@ -20,8 +20,8 @@ public:
     void InitializeBNO();
     void GetBNOData();
     double GetYaw();
+    double analize_error(double setpoint, double current_yaw);
     void SetYaw(double yaw);
-    void MoveWithBNO(double target_angle, double speed);
 };
 
 #endif

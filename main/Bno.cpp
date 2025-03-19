@@ -1,4 +1,4 @@
-#include "Arduino.h"  
+#include "Arduino.h"
 #include "Bno.h"
 #include "cmath"
 
@@ -43,7 +43,9 @@ double BNO055::GetYaw()
     return yaw_;
 }
 
-void BNO055::SetYaw(double yaw)
-{
-    yaw = yaw_;
-}
+double BNO055::analize_error(double setpoint, double current_yaw) {
+    double error = setpoint - current_yaw;
+    if (error > 180) error -= 360;
+    if (error < -180) error += 360;
+    return -error; // Checar si aplica el valor negativo aqui
+  }

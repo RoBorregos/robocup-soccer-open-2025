@@ -1,7 +1,5 @@
 #ifndef motor_h
 #define motor_h
-
-#include <Arduino.h>
 #pragma once
 
 class Motor
@@ -12,18 +10,10 @@ public:
     void MoveForward();
     void MoveBackward();
     void StopMotor();
-    void InitializeDriver();
     void SetSpeed(uint8_t pwm, uint8_t speed);
     uint8_t GetSpeed();
     uint8_t GetIn1();
     uint8_t GetIn2();
-    void MoveMotor1();
-    void MoveMotor2();
-    void MoveMotor3();
-    void MoveMotor4();
-    float GetRPM();
-    float GetAngularVelocity();
-    float GetDegree();
 
 private:
     uint8_t speed_;
