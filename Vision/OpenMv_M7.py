@@ -127,7 +127,9 @@ def main():
                 print("Distance Opposite Goal: %d" % distance_gop)
                 print("Angle Opposite Goal: %d" % angle_goal)
 
-        uart.write("{} {} {} {} {} {}\n".format(distance_b, angle_ball, distance_g, angle_goal, 0, 0))
+        data = "{} {} {} {} {} {}\n".format(distance_b, angle_ball, distance_g, angle_goal, 0, 0)
+        print("Sending: ", data)
+        uart.write(data)
         pyb.delay(50)
 
 if __name__ == "__main__":
