@@ -15,6 +15,10 @@ threshold =  (58, 30, 24, 111, -34, 78)#(9, 93, 26, 92, -34, 78)(43, 100, 14, 39
 threshold_1 = (0, 35, 33, -10, -122, -14) #Azul
 threshold_2 = (41, 67, -2, 13, 16, 127) #(4, 94, 29, 46, 4, 45) (99, 25, 20, -83, 127, 40) Amarillo esta bien para 0,0,0
 
+# The reference point for angle and distance are set in the folloxing coordinates
+
+X_CENTER = 93
+Y_CENTER = 168
 
 def initialize_open():
     sensor.reset()
@@ -59,18 +63,18 @@ def find_goal_opp(img):
     return blob_goal_opp
 
 def distance_ball(blob):
-    relative_distx = blob.cx() - 160
-    relative_disty = blob.cy() - 120
+    relative_distx = blob.cx() - 93
+    relative_disty = blob.cy() - 168
 
     vector_dist = math.sqrt(relative_distx**2 + relative_disty**2)
-    distance =vector_dist
-    print("Distance: %d" % distance)
+    distance = vector_dist
+    #print("Distance: %d" % distance)
 
     return distance
 
 def distance_goal(blob):
-    relative_distx = blob.cx() - 160
-    relative_disty = blob.cy() - 120
+    relative_distx = blob.cx() - 93
+    relative_disty = blob.cy() - 168
 
     vector_dist = math.sqrt(relative_distx**2 + relative_disty**2)
     distance = vector_dist
@@ -79,11 +83,11 @@ def distance_goal(blob):
     return distance
 
 def angle(blob):
-    relative_distx = blob.cx() - 160
-    relative_disty = blob.cy() - 120
+    relative_distx = blob.cx() - 93
+    relative_disty = blob.cy() - 168
 
-    angle = math.atan2(relative_disty, relative_distx)
-    angle_degree = math.degrees(angle)
+    angle = math.atan2(relative_disty,relative_distx)
+    angle_degree = math.degrees(angle)#math.atan(relative_disty/ relative_distx)
     if angle_degree < 0:
         angle_degree = 360 + angle_degree
     return angle_degree
@@ -109,21 +113,21 @@ def main():
         if blob_ball:
             for blob in blob_ball:
                 distance_b = distance_ball(blob)
-                angle_ball = angle(blob)
+                angle_ball = angle(blob) - 180
                 print("Distance Ball: %d" % distance_b)
                 print("Angle Ball: %d" % angle_ball)
 
         if blob_goal:
             for blob in blob_goal:
                 distance_g = distance_goal(blob)
-                angle_goal = angle(blob)
+                angle_goal = angle(blob) -180
                 print("Distance Goal: %d" % distance_g)
                 print("Angle Goal: %d" % angle_goal)
 
         if blob_goal_opp:
             for blob in blob_goal_opp:
                 distance_gop = distance_goal(blob)
-                angle_goal = angle(blob)
+                angle_goal = angle(blob) -180
                 print("Distance Opposite Goal: %d" % distance_gop)
                 print("Angle Opposite Goal: %d" % angle_goal)
 
