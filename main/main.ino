@@ -37,13 +37,11 @@ char buffer[BUFFER_SIZE];
 const int servo_min = 1000;
 const int servo_mid = 1500;
 const int servo_max = 2000;
+float time_shoot = 2000;
 
 
 BNO055 bno;
-PWMServo servo;
-//Photo photo;
-
-
+PWMServo dribbler;
 PID pid(0.65, 0.01 , 0.6, 200);
 
 
@@ -56,10 +54,10 @@ Motors motors(
 
 void setup() {
   Serial.begin(115200);
+  dribbler.attach(6);
+  Serial1.begin(115200);
   motors.InitializeMotors();
   bno.InitializeBNO();
-  servo.attach(0); //Pin de control de señal
-  //photo.InitializeADS();
 }
 
 
@@ -94,7 +92,10 @@ void loop() {
 
     open_ball_seen = (ball_distance != 0 || ball_angle != 0);
   }
-
+  
+/*
+-------Espacio para la logica de fototransistores---------
+*/
 
   double error = bno.analize_error(setpoint,current_yaw);
   double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
@@ -107,45 +108,49 @@ void loop() {
       double differential_ball = error_ball * 0.001; //Calcular el error diferecial
       ponderated_ball = ball_angle + differential_ball;
       motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-      //Acivar Dribbler
+      dribbler.writeMicroseconds(servo_mid);
       if (goal_angle != 0) {
       double error_goal = bno.analize_error(goal_angle, current_yaw);
       double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
       ponderated_goal = goal_angle + differential_goal;
       motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
+      } else {
+        motors.StopMotors();
+        digitalWrite(KICKER_PIN, HIGH);
+        delay(20);
+        digitalWrite(KICKER_PIN, LOW);
+        dribbler.writeMicroseconds(servo_min);
       }
     }
-    if (open_ball_seen){
-      double error_ball =  bno.analize_error(ball_angle, current_yaw);
-      double differential_ball = error_ball * 0.001; //Calcular el error diferecial por medio de experimentacion
-      ponderated_ball = ball_angle + differential_ball;
-      motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-    }
-
+  
 
     if (!open_ball_seen) {
+      start = millis();
       if (goal_angle != 0 ) {
         double error_goal = bno.analize_error(goal_angle, current_yaw);
         double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
         ponderated_goal = goal_angle + differential_goal;
+        motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
+        dribbler.writeMicroseconds(servo_mid);
         if (goal_distance > 20){ //Checar si se puede medir la distancia con la OpenMV
           motors.StopMotors();
-          //Disparar pelota con Kicker
+          digitalWrite(KICKER_PIN, HIGH);
+          delay(20);
+          digitalWrite(KICKER_PIN, LOW);
         }
+      } else {
+        motors.StopMotors();
+        digitalWrite(KICKER_PIN, HIGH);
+        delay(20);
+        digitalWrite(KICKER_PIN, LOW);
+      }
+      if (time_shoot > start) {
+          motors.StopMotors();
+          dribbler.writeMicroseconds(servo_min);
       }
     }
-//Case of nothing detected
-    if (!open_ball_seen) {
-      motors.StopMotors();
-    }
-}
+  }
 }
 
 
-/*
-Distancias de la Pixy. 318 x 208
-*/
- 
- 
- 
 
