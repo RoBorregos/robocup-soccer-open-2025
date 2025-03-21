@@ -10,12 +10,13 @@ from pyb import UART
 
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 
-uart = UART(3, 115200, timeout_char=0) # Checar el valor del pin de UART
+uart = UART(3, 115200, timeout_char=0)
+uart.init(115200, bits=8, parity=None, stop=1) 
 threshold =  (58, 30, 24, 111, -34, 78)#(9, 93, 26, 92, -34, 78)(43, 100, 14, 39, -53, 76) (16, 100, 12, 127, -11, 127) (0, 100, -128, 127, -128, 127)
 threshold_1 = (0, 35, 33, -10, -122, -14) #Azul
 threshold_2 = (41, 67, -2, 13, 16, 127) #(4, 94, 29, 46, 4, 45) (99, 25, 20, -83, 127, 40) Amarillo esta bien para 0,0,0
 
-# The reference point for angle and distance are set in the folloxing coordinates
+# The reference point for angle and distance is set in the folloxing coordinates
 
 X_CENTER = 93
 Y_CENTER = 168
