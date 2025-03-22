@@ -61,6 +61,7 @@ void setup() {
   Serial1.begin(115200);
   motors.InitializeMotors();
   bno.InitializeBNO();
+  analogReadResolution(12);
   pinMode(KICKER_PIN, OUTPUT);
 }
 
