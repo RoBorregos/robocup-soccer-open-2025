@@ -3,6 +3,7 @@
 #include "constantes.h"
 #include "Bno.h"
 #include "PID.h"
+#include "Photo.h"
 #include <cmath>
 
 
@@ -42,6 +43,7 @@ float time_shoot = 2000;
 
 BNO055 bno;
 PWMServo dribbler;
+Photo photo;
 PID pid(0.65, 0.01 , 0.6, 200);
 
 
@@ -92,15 +94,48 @@ void loop() {
 
     open_ball_seen = (ball_distance != 0 || ball_angle != 0);
   }
-  
-/*
--------Espacio para la logica de fototransistores---------
-*/
+
+  photo.ReadPhotoBack
+  photo.ReadPhotoFront
+  photo.ReadPhotoLeft
+  photo.ReadPhotoRight
 
   double error = bno.analize_error(setpoint,current_yaw);
   double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
   double speed_goal = 155;
   double speed_ball = 200;
+
+  //Checar si vale la pena hacer un switch case para los fototransistores
+  
+  if (photo.PhotoBack()){
+    while (photo.PhotoBack()){
+      motors.MoveMotorsImu(0, 200, speed_w);
+    }
+  }
+
+  if (photo.PhotoFront()){
+    while (photo.PhotoFront()){
+      motors.MoveMotorsImu(180, 200, speed_w);
+    }
+  }
+
+  if (photo.PhotoLeft()){
+    while (photo.PhotoLeft){
+      motors.MoveMotorsImu(90, 200, speed_w);
+    }
+  }
+
+  if (photo.PhotoRight()){
+    while (photo.PhotoRight()){
+      motors.MoveMotorsImu(270, 200, speed_w);
+    }
+  }
+
+/*
+-------Espacio para la logica de fototransistores---------
+*/
+
+  
  
   if (speed_w != 0) {
     if (open_ball_seen){

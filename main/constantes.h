@@ -22,6 +22,13 @@ const int MOTOR1_PWM = 2;  //
 
 const int KICKER_PIN =  0;//Poner el ping del Kicker
 
+/*
+-----------------Espacio para los fototransistores-----------------
+*/
+
+
+//Threshold for line values
+const int lineThreshold = 2500;
 
 // Receive signals
 const uint8_t RECEIVE_BNO = 's';
