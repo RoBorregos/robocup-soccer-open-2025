@@ -65,8 +65,8 @@ def find_goal_opp(img):
     return blob_goal_opp
 
 def distance_ball(blob):
-    relative_distx = blob.cx() - 93
-    relative_disty = blob.cy() - 168
+    relative_distx = blob.cx() - 160
+    relative_disty = blob.cy() - 120
 
     vector_dist = math.sqrt(relative_distx**2 + relative_disty**2)
     distance =vector_dist
@@ -75,8 +75,8 @@ def distance_ball(blob):
     return distance
 
 def distance_goal(blob):
-    relative_distx = blob.cx() - 93
-    relative_disty = blob.cy() - 168
+    relative_distx = blob.cx() - 160
+    relative_disty = blob.cy() - 120
 
     vector_dist = math.sqrt(relative_distx**2 + relative_disty**2)
     distance = vector_dist
@@ -85,8 +85,8 @@ def distance_goal(blob):
     return distance
 
 def angle(blob):
-    relative_distx = blob.cx() - 93
-    relative_disty = blob.cy() - 168
+    relative_distx = blob.cx() - 160
+    relative_disty = blob.cy() - 120
 
     angle = math.atan2(relative_disty, relative_distx)
     angle_degree = math.degrees(angle)
