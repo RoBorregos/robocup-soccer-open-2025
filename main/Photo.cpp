@@ -60,20 +60,20 @@ Photo::PhotoFront(){
 
 bool Photo::PhotoLeft(){
     int left = PhotoLeft();
-    return left < lineThreshold;
+    return left < lineThreshold_left;
 }
 
 bool Photo::PhotoRight(){
     int right = PhotoRight();
-    return right < lineThreshold;
+    return right < lineThreshold_right;
 }
 
 bool Photo::PhotoBack(){
     int back = PhotoBack();
-    return back < lineThreshold;
+    return back < lineThreshold_back;
 }
 
 bool Photo::PhotoFront(){
     int front = PhotoFront();
-    return front < lineThreshold;
+    return front < lineThreshold_front;
 }

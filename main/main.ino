@@ -23,6 +23,7 @@ float ponderated_ball = 0;
 float ponderated_goal = 0;
 float ball_angle = 0;
 float goal_angle = 0;
+float goal_angle_180 = 0;
 float ball_distance = 0;
 float last_distance = 0;
 float last_angle = 0;
@@ -56,17 +57,12 @@ Motors motors(
 
 void setup() {
   Serial.begin(115200);
-  dribbler.attach(6);
+  dribbler.attach(DRIBBLER_PIN);
   Serial1.begin(115200);
   motors.InitializeMotors();
   bno.InitializeBNO();
+  pinMode(KICKER_PIN, OUTPUT);
 }
-
-
-double radians_degrees(double radians) {
-  return radians * (180.0 / M_PI);
-}
-
 
 void loop() {
   bno.GetBNOData();
@@ -76,6 +72,7 @@ void loop() {
   if (Serial1.available()){
     int bytesRead = Serial1.readBytesUntil('\n', buffer, sizeof(buffer));
     buffer[bytesRead] = '\0';
+
     char* token = strtok(buffer, " ");
     ball_distance = atof(token);
 
@@ -85,12 +82,11 @@ void loop() {
 
 
     token = strtok(NULL, " ");
-    goal_angle = atof(token);
+    goal_distance = atof(token);
 
 
     token = strtok(NULL, " ");
-    goal_distance = atof(token);
-
+    goal_angle = atof(token);
 
     open_ball_seen = (ball_distance != 0 || ball_angle != 0);
   }
@@ -107,106 +103,25 @@ void loop() {
 
   goal_angle_180 = goal_angle + 180;
   
-  if (goal_angle != 180 && goal_distance > 30){//Distance to the penalti area
-    double error_goal = bno.analize_error(goal_angle_180, current_yaw);
-    double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
-    ponderated_goal = goal_angle + differential_goal;
-    motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
-    if (photo.ReadPhotoLeft && photo.ReadPhotoRight){
-      motors.StopMotors();
-    }
-  }
-
-  //Checar si vale la pena hacer un switch case para los fototransistores
-
-  if (photo.PhotoBack()){
-    while (photo.PhotoBack()){
-      motors.MoveMotorsImu(0, 200, speed_w);
-      delay(200);
-    }
-  }
-
-  if (photo.PhotoFront()){
-    while (photo.PhotoFront()){
-      motors.MoveMotorsImu(180, 200, speed_w);
-    }
-  }
-
-  if (photo.PhotoLeft()){
-    while (photo.PhotoLeft){
-      motors.MoveMotorsImu(90, 200, speed_w);
-    }
-  }
-
-  if (photo.PhotoRight()){
-    while (photo.PhotoRight()){
-      motors.MoveMotorsImu(270, 200, speed_w);
-    }
-  }
-
- 
-  if (speed_w != 0) {
-
-    if (open_ball_seen){
-      if (ball_angle > 0){
-        motors.MoveMotorsImu(ball_angle, 0, speed_w);
-        
-      }
-    }
-
-
-
-
-
-
-    /*
-    if (open_ball_seen){
+  if (open_ball_seen){
+    if (ball_angle != 0){
       double error_ball = bno.analize_error(ball_angle, current_yaw);
       double differential_ball = error_ball * 0.001; //Calcular el error diferecial
       ponderated_ball = ball_angle + differential_ball;
       motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-      dribbler.writeMicroseconds(servo_mid);
-      if (goal_angle != 0) {
-      double error_goal = bno.analize_error(goal_angle, current_yaw);
+    } else {
+      motors.StopMotors();
+    }
+  } else {
+    if (goal_angle != 180 && goal_distance > 30){//Distance to the penalti area
+      double error_goal = bno.analize_error(goal_angle_180, current_yaw);
       double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
-      ponderated_goal = goal_angle + differential_goal;
+      ponderated_goal = goal_angle_180 + differential_goal;
       motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
-      } else {
+      if (photo.ReadPhotoLeft && photo.ReadPhotoRight){
         motors.StopMotors();
-        digitalWrite(KICKER_PIN, HIGH);
-        delay(20);
-        digitalWrite(KICKER_PIN, LOW);
-        dribbler.writeMicroseconds(servo_min);
       }
     }
-  
-
-    if (!open_ball_seen) {
-      start = millis();
-      if (goal_angle != 0 ) {
-        double error_goal = bno.analize_error(goal_angle, current_yaw);
-        double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
-        ponderated_goal = goal_angle + differential_goal;
-        motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
-        dribbler.writeMicroseconds(servo_mid);
-        if (goal_distance > 20){ //Checar si se puede medir la distancia con la OpenMV
-          motors.StopMotors();
-          digitalWrite(KICKER_PIN, HIGH);
-          delay(20);
-          digitalWrite(KICKER_PIN, LOW);
-        }
-      } else {
-        motors.StopMotors();
-        digitalWrite(KICKER_PIN, HIGH);
-        delay(20);
-        digitalWrite(KICKER_PIN, LOW);
-      }
-      if (time_shoot > start) {
-          motors.StopMotors();
-          dribbler.writeMicroseconds(servo_min);
-      }
-    }
-      */
   }
 }
 
