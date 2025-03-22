@@ -105,11 +105,24 @@ void loop() {
   double speed_goal = 155;
   double speed_ball = 200;
 
-  //Checar si vale la pena hacer un switch case para los fototransistores
+  goal_angle_180 = goal_angle + 180;
   
+  if (goal_angle != 180 && goal_distance > 30){//Distance to the penalti area
+    double error_goal = bno.analize_error(goal_angle_180, current_yaw);
+    double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
+    ponderated_goal = goal_angle + differential_goal;
+    motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
+    if (photo.ReadPhotoLeft && photo.ReadPhotoRight){
+      motors.StopMotors();
+    }
+  }
+
+  //Checar si vale la pena hacer un switch case para los fototransistores
+
   if (photo.PhotoBack()){
     while (photo.PhotoBack()){
       motors.MoveMotorsImu(0, 200, speed_w);
+      delay(200);
     }
   }
 
@@ -131,13 +144,22 @@ void loop() {
     }
   }
 
-/*
--------Espacio para la logica de fototransistores---------
-*/
-
-  
  
   if (speed_w != 0) {
+
+    if (open_ball_seen){
+      if (ball_angle > 0){
+        motors.MoveMotorsImu(ball_angle, 0, speed_w);
+        
+      }
+    }
+
+
+
+
+
+
+    /*
     if (open_ball_seen){
       double error_ball = bno.analize_error(ball_angle, current_yaw);
       double differential_ball = error_ball * 0.001; //Calcular el error diferecial
@@ -184,6 +206,7 @@ void loop() {
           dribbler.writeMicroseconds(servo_min);
       }
     }
+      */
   }
 }
 
