@@ -108,33 +108,24 @@ void loop() {
   //Checar si vale la pena hacer un switch case para los fototransistores
   
   if (photo.PhotoBack()){
-    while (photo.PhotoBack()){
-      motors.MoveMotorsImu(0, 200, speed_w);
-    }
+    motors.MoveMotorsImu(0, 200, speed_w); 
+    delay(200); 
   }
 
   if (photo.PhotoFront()){
-    while (photo.PhotoFront()){
-      motors.MoveMotorsImu(180, 200, speed_w);
-    }
+    motors.MoveMotorsImu(180, 200, speed_w);
+    delay(200);
   }
 
   if (photo.PhotoLeft()){
-    while (photo.PhotoLeft){
-      motors.MoveMotorsImu(90, 200, speed_w);
-    }
+    motors.MoveMotorsImu(90, 200, speed_w);
+    delay(200);
   }
 
   if (photo.PhotoRight()){
-    while (photo.PhotoRight()){
-      motors.MoveMotorsImu(270, 200, speed_w);
-    }
+    motors.MoveMotorsImu(270, 200, speed_w);
+    delay(200);
   }
-
-/*
--------Espacio para la logica de fototransistores---------
-*/
-
   
  
   if (speed_w != 0) {
