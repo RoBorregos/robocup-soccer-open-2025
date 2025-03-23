@@ -55,6 +55,7 @@ Motors motors(
 
 
 void setup() {
+  Serial1.begin(115200);
   Serial.begin(115200);
   dribbler.attach(6);
   Serial1.begin(115200);
@@ -63,10 +64,6 @@ void setup() {
 }
 
 
-double radians_degrees(double radians) {
-  return radians * (180.0 / M_PI);
-}
-
 
 void loop() {
   bno.GetBNOData();
@@ -74,6 +71,7 @@ void loop() {
 
 
   if (Serial1.available()){
+    Serial.println("Reading data from OpenMV...");
     int bytesRead = Serial1.readBytesUntil('\n', buffer, sizeof(buffer));
     buffer[bytesRead] = '\0';
     char* token = strtok(buffer, " ");
@@ -95,10 +93,10 @@ void loop() {
     open_ball_seen = (ball_distance != 0 || ball_angle != 0);
   }
 
-  photo.ReadPhotoBack
-  photo.ReadPhotoFront
-  photo.ReadPhotoLeft
-  photo.ReadPhotoRight
+  photo.ReadPhotoBack()
+  photo.ReadPhotoFront()
+  photo.ReadPhotoLeft()
+  photo.ReadPhotoRight()
 
   double error = bno.analize_error(setpoint,current_yaw);
   double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
@@ -135,6 +133,8 @@ void loop() {
       ponderated_ball = ball_angle + differential_ball;
       motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
       dribbler.writeMicroseconds(servo_mid);
+      if (ball_distance < 20) {
+        last_distance = ball_distance;
       if (goal_angle != 0) {
       double error_goal = bno.analize_error(goal_angle, current_yaw);
       double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
@@ -150,9 +150,9 @@ void loop() {
     }
   
 
-    if (!open_ball_seen) {
+    if (!open_ball_seen && last_distance < 20) {
       start = millis();
-      if (goal_angle != 0 ) {
+      if (goal_angle != 0) {
         double error_goal = bno.analize_error(goal_angle, current_yaw);
         double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
         ponderated_goal = goal_angle + differential_goal;
@@ -175,6 +175,9 @@ void loop() {
           dribbler.writeMicroseconds(servo_min);
       }
     }
+  }
+  else if (!open_ball_seen){
+    motors.StopMotors();
   }
 }
 
