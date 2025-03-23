@@ -21,7 +21,7 @@ Photo::InitializePhoto(){
     }
 }
 
-Photo::PhotoLeft(){
+Photo::ReadPhotoLeft(){
     int sum = 0;
     for (int i = 0; i < analogLeftElements; i++)
     {
@@ -30,7 +30,7 @@ Photo::PhotoLeft(){
     }
 }
 
-Photo::PhotoRight(){
+Photo::ReadPhotoRight(){
     int sum = 0;
     for (int i = 0; i < analogRightElements; i++)
     {
@@ -40,7 +40,7 @@ Photo::PhotoRight(){
 }
 
 
-Photo::PhotoBack(){
+Photo::ReadPhotoBack(){
     int sum = 0;
     for (int i = 0; i < analogBackElements; i++)
     {
@@ -49,7 +49,7 @@ Photo::PhotoBack(){
     }
 }
 
-Photo::PhotoFront(){
+Photo::ReadPhotoFront(){
     int sum = 0;
     for (int i = 0; i < analogFrontElements; i++)
     {
@@ -59,21 +59,21 @@ Photo::PhotoFront(){
 }
 
 bool Photo::PhotoLeft(){
-    int left = PhotoLeft();
-    return left < lineThreshold;
+    int left = ReadPhotoLeft();
+    return left < lineThreshold_left;
 }
 
 bool Photo::PhotoRight(){
-    int right = PhotoRight();
-    return right < lineThreshold;
+    int right = ReadPhotoRight();
+    return right < lineThreshold_right;
 }
 
 bool Photo::PhotoBack(){
-    int back = PhotoBack();
-    return back < lineThreshold;
+    int back = ReadPhotoBack();
+    return back < lineThreshold_back;
 }
 
 bool Photo::PhotoFront(){
-    int front = PhotoFront();
-    return front < lineThreshold;
+    int front = ReadPhotoFront();
+    return front < lineThreshold_front;
 }

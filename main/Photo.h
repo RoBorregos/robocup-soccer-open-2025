@@ -3,6 +3,7 @@
 #include "constantes.h"
 #include <Arduino.h>
 
+
 class Photo
 {
     public:
