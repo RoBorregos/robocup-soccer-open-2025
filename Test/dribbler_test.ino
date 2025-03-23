@@ -1,4 +1,4 @@
-#include <PWMServo.h>  
+#include <Servo.h>  
 #include "motores.h"
 #include "constantes.h"
 #include "Bno.h"
@@ -43,6 +43,10 @@ void setup() {
     Serial1.begin(115200);
 }
 
+int microsecondsToDegrees(int microseconds) {
+    return map(microseconds, 1000, 2000, 0, 180);
+}
+
 void loop() {
     dribbler.writeMicroseconds(servo_mid);
     delay(1000);
@@ -53,3 +57,4 @@ void loop() {
     dribbler.writeMicroseconds(0);
     delay(5000);
 }
+

@@ -1,4 +1,4 @@
-#include <PWMServo.h>  
+#include <Servo.h>  
 #include "motores.h"
 #include "constantes.h"
 #include "Bno.h"
@@ -51,7 +51,7 @@ int speed_ball = 100;
 
 
 BNO055 bno;
-PWMServo servo;
+Servo servo;
 //Photo photo;
 
 
