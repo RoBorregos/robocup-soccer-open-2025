@@ -20,7 +20,8 @@ const int MOTOR1_IN1 = 29;  //
 const int MOTOR1_IN2 = 28;  // 
 const int MOTOR1_PWM = 2;  //
 
-const int KICKER_PIN =  0;//Poner el ping del Kicker
+const int KICKER_PIN =  32; //Poner el ping del Kicker
+const int DRIBBLER_PIN = 6; //Poner el pin del Dribbler
 
 /*
 -----------------Espacio para los fototransistores-----------------
@@ -28,7 +29,10 @@ const int KICKER_PIN =  0;//Poner el ping del Kicker
 
 
 //Threshold for line values
-const int lineThreshold = 2500;
+const int lineThreshold_left = 2500;
+const int lineThreshold_right = 2500;
+const int lineThreshold_front = 2500;
+const int lineThreshold_back = 2500;
 
 // Receive signals
 const uint8_t RECEIVE_BNO = 's';
