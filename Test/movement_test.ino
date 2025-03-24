@@ -86,6 +86,9 @@ void setup() {
 void loop() {
   bno.GetBNOData();
   double current_yaw = bno.GetYaw();
+  Serial.print("Angulo BNO: ");
+  Serial.println(current_yaw);
+  
     if (Serial1.available()) {
       Serial.println("Datos disponibles en Serial1");
       int bytesRead = Serial1.readBytesUntil('\n', buffer, sizeof(buffer));
@@ -119,7 +122,7 @@ void loop() {
       if (open_ball_seen){
         Serial.println("Se ha detectado la pelota");
       }
-     
+     delay(50);
     } else {
       Serial.println("No se está recibiendo información");
     }
