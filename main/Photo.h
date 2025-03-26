@@ -6,31 +6,22 @@
 class Photo
 {
     public:
-        Photo();
-        void InitializePhoto();
-        int ReadPhotoLeft();
-        int ReadPhotoRight();
-        int ReadPhotoBack();
-        int ReadPhotoFront();
+        Photo(int frontPins[], int backPins[], int leftPins[], int rightPins[], int size_front, int size_back, int size_left, int size_right);
+        void ReadZone(int zone, int* values);
+        void ReadAll(int* front_values, int* back_values, int* right_values, int* left_values);
+        void printValues(int* front_values, int* back_values, int* left_values, int* right_values);
+        bool LineDetected(int zone, int threshold);
+        bool PhotoFront();
+        bool PhotoBack();
         bool PhotoLeft();
         bool PhotoRight();
-        bool PhotoBack();
-        bool PhotoFront();
-        bool EvaluatePhotoState();
 
     private:
-        //Average values Photo left
-        uint16_t values_photo_left[analogLeftElements];
-        int average_photo_left;
-        //Average values Photo right
-        uint16_t values_photo_right[analogRightElemts];
-        int average_photo_right;
-        //Average values Photo back
-        uint16_t values_photo_back[analogBackElemts];
-        int average_photo_back;
-        //Average values Photo front
-        uint16_t values_photo_front[analogFrontElemts];
-        int average_photo_front;
+        int* front_pins;
+        int* back_pins;
+        int* right_pins;
+        int* left_pins;
+        int front_size, back_size, right_size, left_size; 
 };
 
 #endif

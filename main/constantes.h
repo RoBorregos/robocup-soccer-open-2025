@@ -23,6 +23,15 @@ const int MOTOR1_PWM = 2;  //
 const int KICKER_PIN =  32;
 const int DRIBBLER_PIN = 6;
 
+const int frontPins[] = {};
+const int backPins[] = {};
+const int rightPins[] = {};
+const int leftPins[] = {};
+
+const int front_array = 1;
+const int back_array = 2;
+const int right_array = 3;
+const int left_array = 4;
 //Poner el ping del Kicker
 
 /*
@@ -35,13 +44,5 @@ const int lineThreshold_left = 2500;
 const int lineThreshold_right = 2500;
 const int lineThreshold_front = 2500;
 const int lineThreshold_back = 2500;
-
-// Receive signals
-const uint8_t RECEIVE_BNO = 's';
-const uint8_t RECEIVE_BALL_ANGLE= 'c';
-const uint8_t RECEIVE_BALL_DISTANCE = 'd';
-const uint8_t RECEIVE_GOAL_ANGLE = 'g';
-const uint8_t RECEIVE_GOAL_DISTANCE = 'k';
-const uint8_t RECEIVE_LINE_ANGLE = 'r';
 
 #endif  
