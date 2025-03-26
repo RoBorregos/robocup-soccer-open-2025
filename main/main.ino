@@ -46,8 +46,11 @@ const int distance_limit_max = 40;
 bool defense_zone = false;
 
 BNO055 bno;
-PWMServo dribbler;
-Photo photo;
+Servo dribbler;
+Photo photo(
+  frontPins,backPins,rightPins, leftPins,
+  size_front, size_back, size_left, size_right
+);
 PID pid(0.65, 0.01 , 0.6, 200);
 
 
@@ -101,15 +104,35 @@ void loop() {
     defense_zone = false;
   }
 
-  photo.ReadPhotoBack
-  photo.ReadPhotoFront
-  photo.ReadPhotoLeft
-  photo.ReadPhotoRight
-
   double error = bno.analize_error(setpoint,current_yaw);
   double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
   double speed_goal = 155;
   double speed_ball = 200;
+  
+  photo.ReadAll();
+
+  if (photo.PhotoBack()){
+    motors.MoveMotorsImu(0, 200, speed_w); 
+    delay(200); 
+  }
+
+  if (photo.PhotoFront()){
+    motors.MoveMotorsImu(180, 200, speed_w);
+    delay(200);
+  }
+
+  if (photo.PhotoLeft()){
+    motors.MoveMotorsImu(90, 200, speed_w);
+    delay(200);
+  }
+
+  if (photo.PhotoRight()){
+    motors.MoveMotorsImu(270, 200, speed_w);
+    delay(200);
+  }
+  
+
+
 
   defense_limit = ball_distance + goal_distance;
 

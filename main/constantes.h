@@ -23,21 +23,15 @@ const int MOTOR1_PWM = 2;  //
 const int KICKER_PIN =  32;
 const int DRIBBLER_PIN = 6;
 
-const int frontPins[] = {};
-const int backPins[] = {};
-const int rightPins[] = {};
-const int leftPins[] = {};
+int* frontPins[] = {};
+int* backPins[] = {};
+int* rightPins[] = {};
+int* leftPins[] = {};
 
-const int front_array = 1;
-const int back_array = 2;
-const int right_array = 3;
-const int left_array = 4;
-//Poner el ping del Kicker
-
-/*
------------------Espacio para los fototransistores-----------------
-*/
-
+int* size_front = sizeof(frontPins)/sizeof(frontPins[0]);
+int* size_back = sizeof(backPins)/sizeof(backPins[0]);
+int* size_left = sizeof(leftPins)/sizeof(leftPins[0]);
+int* size_right = sizeof(rightPins)/sizeof(rightPins[0]);
 
 //Threshold for line values
 const int lineThreshold_left = 2500;
