@@ -47,10 +47,6 @@ bool defense_zone = false;
 
 BNO055 bno;
 Servo dribbler;
-Photo photo(
-  frontPins,backPins,rightPins, leftPins,
-  size_front, size_back, size_left, size_right
-);
 PID pid(0.65, 0.01 , 0.6, 200);
 
 
@@ -98,68 +94,26 @@ void loop() {
     open_ball_seen = (ball_distance != 0 || ball_angle != 0);
   }
 
-  if (goal_distance > distance_limit_min && goal_distance < distance_limit_max){
-    defense_zone = true;
-  } else {
-    defense_zone = false;
-  }
-
   double error = bno.analize_error(setpoint,current_yaw);
   double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
   double speed_goal = 155;
   double speed_ball = 200;
-  
-  photo.ReadAll();
-
-  if (photo.PhotoBack()){
-    motors.MoveMotorsImu(0, 200, speed_w); 
-    delay(200); 
-  }
-
-  if (photo.PhotoFront()){
-    motors.MoveMotorsImu(180, 200, speed_w);
-    delay(200);
-  }
-
-  if (photo.PhotoLeft()){
-    motors.MoveMotorsImu(90, 200, speed_w);
-    delay(200);
-  }
-
-  if (photo.PhotoRight()){
-    motors.MoveMotorsImu(270, 200, speed_w);
-    delay(200);
-  }
-  
 
 
-
-  defense_limit = ball_distance + goal_distance;
-
-
-  if (open_ball_seen && defense_limit < 70 && defense_zone){ //Checar valores de distancia
+  if (open_ball_seen) { //Checar valores de distancia
     if (ball_angle != 0){
       double error_ball = ball_angle + current_yaw;
       double differential_ball = error_ball * 0.001; //Calcular el error diferecial
       ponderated_ball = ball_angle + differential_ball;
       motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-    } else {
-      double error_goal = goal_angle + current_yaw;
-      double differential_goal = error_goal * 0.001; //Calcular el error diferencial por medio de prueba y error
-      ponderated_goal = goal_angle + differential_goal;
-      motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
-    }
-  } else {
-    motors.MoveMotorsImu(0, 0, speed_w);
-    if (goal_angle != 180 && goal_angle >  0) {
-      motors.MoveRight();
-    } else if (goal_angle != 180 && goal_angle < 0) {
-      motors.MoveLeft();
-    } else if (goal_angle == 180) {
-      motors.StopMotors();
-    }
-  }
+      if (ball_distance < 20 && ball_distance != 0) {
+        last_distance = ball_distance; 
+        }
+      } else {
 
+      }
+    
+  } 
 }
 
 
