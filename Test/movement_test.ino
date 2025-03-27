@@ -131,14 +131,13 @@ void loop() {
   double error = bno.analize_error(setpoint,current_yaw);
   double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos
  
-  if (speed_w != 0) {
-    if (open_ball_seen){
-      double error_ball = bno.analize_error(ball_angle, current_yaw);
-      double differential_ball = error_ball * 0.001; //Calcular el error diferecial
-      ponderated_ball = ball_angle + differential_ball;
-      motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-      Serial.println("Moviendo hacia la pelota ");
-    }
+
+  if (open_ball_seen){
+    double error_ball = ball_angle + current_yaw;
+    double differential_ball = error_ball * 0.001; //Calcular el error diferecial
+    ponderated_ball = ball_angle + differential_ball;
+    motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
+    Serial.println("Moviendo hacia la pelota ");
   }
 }
 

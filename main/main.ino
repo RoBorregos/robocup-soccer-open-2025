@@ -40,12 +40,9 @@ void setup() {
     Serial1.begin(115200);
     Serial.begin(115200);
     dribbler.attach(6);
-    Serial1.begin(115200);
+    delay(1000);
 }
 
-int microsecondsToDegrees(int microseconds) {
-    return map(microseconds, 1000, 2000, 0, 180);
-}
 
 void loop() {
     dribbler.writeMicroseconds(servo_mid);
