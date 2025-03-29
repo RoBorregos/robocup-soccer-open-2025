@@ -40,7 +40,8 @@ void setup() {
     Serial1.begin(115200);
     Serial.begin(115200);
     dribbler.attach(6);
-    Serial1.begin(115200);
+    dribbler.writeMicroseconds(servo_min);
+    delay(1000);
 }
 
 int microsecondsToDegrees(int microseconds) {
@@ -48,13 +49,22 @@ int microsecondsToDegrees(int microseconds) {
 }
 
 void loop() {
-    dribbler.writeMicroseconds(servo_mid);
-    delay(1000);
-    dribbler.writeMicroseconds(servo_min);
-    delay(1000);
-    dribbler.writeMicroseconds(servo_max);
-    delay(1000);
-    dribbler.writeMicroseconds(0);
-    delay(5000);
+    for (int pulse = 1000; pulse <= 2000; pulse += 10) {
+        dribbler.writeMicroseconds(pulse);
+        Serial.println(pulse);
+        delay(50);  // Small delay for smooth acceleration
+    }
+
+    delay(2000);  // Hold at full throttle
+
+    // Slowly decrease back to minimum
+    for (int pulse = 2000; pulse >= 1000; pulse -= 10) {
+        dribbler.writeMicroseconds(pulse);
+        Serial.println(pulse);
+        delay(50);
+    }
+
+    delay(2000);  // Pause before repeating
 }
+
 
