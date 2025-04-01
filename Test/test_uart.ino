@@ -41,7 +41,7 @@ int time_shoot = 2000;
 
 
 BNO055 bno;
-PWMServo servo;
+Servo servo;
 //Photo photo;
 
 
