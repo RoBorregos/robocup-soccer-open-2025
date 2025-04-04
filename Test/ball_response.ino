@@ -36,6 +36,10 @@ const int servo_min = 1000;
 const int servo_mid = 1500;
 const int servo_max = 2000;
 int time_shoot = 2000;
+uint8_t front[2] = {A8, A9};
+uint8_t right[4]  = {A3, A12, A13, A14};
+uint8_t left[4] = {A6, A15, A16, A17};
+uint8_t back[4]  = {A0, A1, A2, A7};
 
 
 BNO055 bno;
@@ -62,10 +66,10 @@ void setup() {
   dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
   bno.InitializeBNO();  
-  sensors.setThreshold(FRONT, 600);
-  sensors.setThreshold(LEFT,  580);
-  sensors.setThreshold(RIGHT, 590);
-  sensors.setThreshold(BACK,  610);
+  sensors.setThreshold(FRONT, 245);
+  sensors.setThreshold(LEFT,  700);
+  sensors.setThreshold(RIGHT, 475);
+  sensors.setThreshold(BACK,  405);
   delay(1000);
 
 }
@@ -145,4 +149,3 @@ void loop() {
       delay(300);
     }
 }
-
