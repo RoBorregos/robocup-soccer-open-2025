@@ -3,12 +3,9 @@
 #include "constantes.h"
 #include "Bno.h"
 #include "PID.h"
+#include "Photo.h"
 #include <cmath>
-
-
 //Incluir la libreria del servo para el Kicker
-//#include "Photo.h"
-
 
 float bno_angle = 0;
 unsigned long start_millis;
@@ -54,6 +51,8 @@ Motors motors(
     MOTOR2_PWM, MOTOR2_IN1, MOTOR2_IN2,
     MOTOR3_PWM, MOTOR3_IN1, MOTOR3_IN2,
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
+    
+PhotoSensors sensors(front, left, right, back);
 
 
 void setup() {
@@ -62,8 +61,13 @@ void setup() {
   dribbler.attach(6);
   dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
-  bno.InitializeBNO();
+  bno.InitializeBNO();  
+  sensors.setThreshold(FRONT, 600);
+  sensors.setThreshold(LEFT,  580);
+  sensors.setThreshold(RIGHT, 590);
+  sensors.setThreshold(BACK,  610);
   delay(1000);
+
 }
 
 
@@ -121,6 +125,24 @@ void loop() {
         motors.SetAllSpeeds(80);
         motors.MoveBackward();
       }
+    }
+
+    if (sensors.isLineDetected(FRONT)) {
+      Serial.println("Línea al frente. Retrocede.");
+      motors.MoveMotorsImu(180, 200, speed_w);
+      delay(300);
+    } else if (sensors.isLineDetected(LEFT)) {
+      Serial.println("Línea a la izquierda. Gira a la derecha.");
+      motors.MoveMotorsImu(90, 200, speed_w);
+      delay(300);
+    } else if (sensors.isLineDetected(RIGHT)) {
+      Serial.println("Línea a la derecha. Gira a la izquierda.");
+      motors.MoveMotorsImu(270, 200, speed_w);
+      delay(300);
+    } else if (sensors.isLineDetected(BACK)) {
+      Serial.println("Línea atrás. Avanza.");
+      motors.MoveMotorsImu(0, 200, speed_w);
+      delay(300);
     }
 }
 
