@@ -2,8 +2,6 @@
 #define constantes_h
 #include <stdint.h>
 
-
-
 const int MOTOR3_IN1 = 34; 
 const int MOTOR3_IN2 = 33;
 const int MOTOR3_PWM = 4; 
@@ -22,7 +20,6 @@ const int MOTOR1_PWM = 2;  //
 
 const int KICKER_PIN =  0;//Poner el ping del Kicker
 
-
 // Receive signals
 const uint8_t RECEIVE_BNO = 's';
 const uint8_t RECEIVE_BALL_ANGLE= 'c';
@@ -30,5 +27,11 @@ const uint8_t RECEIVE_BALL_DISTANCE = 'd';
 const uint8_t RECEIVE_GOAL_ANGLE = 'g';
 const uint8_t RECEIVE_GOAL_DISTANCE = 'k';
 const uint8_t RECEIVE_LINE_ANGLE = 'r';
+
+uint8_t front[2] = {A0, A1};
+uint8_t left[4]  = {A2, A3, A4, A5};
+uint8_t right[4] = {A6, A7, A8, A9};
+uint8_t back[4]  = {A10, A11, A12, A13};
+
 
 #endif  
