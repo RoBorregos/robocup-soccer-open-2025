@@ -129,19 +129,19 @@ void loop() {
 
     if (sensors.isLineDetected(FRONT)) {
       Serial.println("Línea al frente. Retrocede.");
-      myMotors.MoveMotorsImu(180, 200, speed_w);
+      motors.MoveMotorsImu(180, 200, speed_w);
       delay(300);
     } else if (sensors.isLineDetected(LEFT)) {
       Serial.println("Línea a la izquierda. Gira a la derecha.");
-      myMotors.MoveMotorsImu(90, 200, speed_w);
+      motors.MoveMotorsImu(90, 200, speed_w);
       delay(300);
     } else if (sensors.isLineDetected(RIGHT)) {
       Serial.println("Línea a la derecha. Gira a la izquierda.");
-      myMotors.MoveMotorsImu(270, 200, speed_w);
+      motors.MoveMotorsImu(270, 200, speed_w);
       delay(300);
     } else if (sensors.isLineDetected(BACK)) {
       Serial.println("Línea atrás. Avanza.");
-      myMotors.MoveMotorsImu(0, 200, speed_w);
+      motors.MoveMotorsImu(0, 200, speed_w);
       delay(300);
     }
 }
