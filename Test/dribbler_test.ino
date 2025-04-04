@@ -34,7 +34,7 @@ const int servo_min = 1000;
 const int servo_mid = 1500;
 const int servo_max = 2000;
 
-PWMServo dribbler;
+Servo dribbler;
 
 void setup() {
     Serial1.begin(115200);
