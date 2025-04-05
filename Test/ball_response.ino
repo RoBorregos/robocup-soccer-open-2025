@@ -36,6 +36,10 @@ const int servo_min = 1000;
 const int servo_mid = 1500;
 const int servo_max = 2000;
 int time_shoot = 2000;
+uint8_t front[2] = {A8, A9};
+uint8_t right[4] = {A3, A12, A13, A14};
+uint8_t left[4] = {A6, A15, A16, A17};
+uint8_t back[4] = {A0, A1, A2, A7};
 
 
 BNO055 bno;
@@ -61,11 +65,13 @@ void setup() {
   dribbler.attach(6);
   dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
-  bno.InitializeBNO();  
+  bno.InitializeBNO(); 
+/* 
   sensors.setThreshold(FRONT, 600);
   sensors.setThreshold(LEFT,  580);
   sensors.setThreshold(RIGHT, 590);
   sensors.setThreshold(BACK,  610);
+*/
   delay(1000);
 
 }
@@ -125,8 +131,9 @@ void loop() {
         motors.SetAllSpeeds(80);
         motors.MoveBackward();
       }
+      dribbler.writeMicroseconds(servo_mid);
     }
-
+/*
     if (sensors.isLineDetected(FRONT)) {
       Serial.println("Línea al frente. Retrocede.");
       motors.MoveMotorsImu(180, 200, speed_w);
@@ -144,5 +151,6 @@ void loop() {
       motors.MoveMotorsImu(0, 200, speed_w);
       delay(300);
     }
+       */
 }
 
