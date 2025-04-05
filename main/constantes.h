@@ -28,10 +28,10 @@ const uint8_t RECEIVE_GOAL_ANGLE = 'g';
 const uint8_t RECEIVE_GOAL_DISTANCE = 'k';
 const uint8_t RECEIVE_LINE_ANGLE = 'r';
 
-uint8_t front[2] = {A0, A1};
-uint8_t left[4]  = {A2, A3, A4, A5};
-uint8_t right[4] = {A6, A7, A8, A9};
-uint8_t back[4]  = {A10, A11, A12, A13};
+extern uint8_t front[2];
+extern uint8_t right[4];
+extern uint8_t left[4];
+extern uint8_t back[4];
 
 
 #endif  
