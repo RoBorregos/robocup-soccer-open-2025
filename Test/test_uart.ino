@@ -66,8 +66,7 @@ void setup() {
   delay(1000);
 }
 
-
-void loop() { 
+void serial1camera(){
   if (Serial1.available()){
     Serial.println("Reading data from OpenMV 1...");
     int bytesRead = Serial1.readBytesUntil('\n', buffer1, sizeof(buffer1));
@@ -100,7 +99,8 @@ void loop() {
   } else {
     Serial.println("NO se detecta camara 1");
   }
-/*
+}
+void serial2camera(){
   if (Serial2.available()){
     Serial.println("Reading data from OpenMV 2...");
     int bytesRead = Serial2.readBytesUntil('\n', buffer2, sizeof(buffer2));
@@ -128,7 +128,11 @@ void loop() {
 
     dribbler_ball_seen = (dribbler_distance != 0 && dribbler_angle != 0);
     ball_captured = (dribbler_distance <= 40 && dribbler_angle == 0);
-    delay(50);
+    delay(55);
   }
-  */
+}
+
+void loop() { 
+ void serial1camera();
+ void serial2camera();
 }
