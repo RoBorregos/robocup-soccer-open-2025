@@ -58,13 +58,12 @@ void Motors::MoveForward()
 {
     motor1.MoveForward();
     motor2.MoveForward();
-    motor3.MoveForward();
-    motor4.MoveForward();
+    motor3.MoveBackward();
+    motor4.MoveBackward();
 };
 
 void Motors::MoveRight()
 {
-    StopMotors();
     motor1.MoveForward();
     motor2.MoveBackward();
     motor3.MoveBackward();
@@ -73,7 +72,6 @@ void Motors::MoveRight()
 
 void Motors::MoveLeft()
 {
-    StopMotors();
     motor1.MoveBackward();
     motor2.MoveForward();
     motor3.MoveForward();
@@ -82,9 +80,10 @@ void Motors::MoveLeft()
 
 void Motors::MoveBackward()
 {
-    StopMotors();
+    motor1.MoveBackward();
     motor2.MoveBackward();
     motor3.MoveForward();
+    motor4.MoveForward();
 };
 
 void Motors::MoveMotor1()
@@ -168,6 +167,10 @@ void Motors::MoveMotorsImu(double degree, uint8_t speed, double speed_w)
     int speedC = abs(int(m3));
     int speedD = abs(int(m4));
 
+    Serial.print("m1: "); Serial.print(m1); Serial.print(", speedA: "); Serial.println(speedA);
+    Serial.print("m2: "); Serial.print(m2); Serial.print(", speedB: "); Serial.println(speedB);
+    Serial.print("m3: "); Serial.print(m3); Serial.print(", speedC: "); Serial.println(speedC);
+    Serial.print("m4: "); Serial.print(m4); Serial.print(", speedD: "); Serial.println(speedD);
 
 
     analogWrite(motor1.GetSpeed(), speedA);
