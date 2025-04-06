@@ -36,7 +36,7 @@ bool open_ball_seen = false;
 bool dribbler_ball_seen = false;
 bool goal_seen = false;
 bool ball_captured = false;
-const int BUFFER_SIZE = 50;
+const int BUFFER_SIZE = 100;
 char buffer1[BUFFER_SIZE];
 char buffer2[BUFFER_SIZE];
 const int servo_min = 1000;
@@ -128,19 +128,10 @@ void loop() {
     char* token = strtok(buffer1, " ");
     dribbler_distance = atof(token);
 
-
-
     token = strtok(NULL, " ");
     dribbler_angle = atof(token);
 
-    token = strtok(NULL, " ");
-    goal_angle = atof(token);
-
-
-    token = strtok(NULL, " ");
-    goal_distance = atof(token);
-
-    dribbler_ball_seen = (dribbler_distance != 0 || dribbler_angle != 0);
+    dribbler_ball_seen = (dribbler_distance != 0 && dribbler_angle != 0);
     if (dribbler_distance == 0 && dribbler_angle == 0) {
       dribbler_ball_seen = false;
     }
