@@ -102,8 +102,8 @@ def distance_goal(blob):
 def angle(blob):
     relative_distx = blob.cx() - X_CENTER
     relative_disty = blob.cy() - Y_CENTER
-    print("Relative Distx: %d" % relative_distx)
-    print("Relative Disty: %d" % relative_disty)
+    #print("Relative Distx: %d" % relative_distx)
+    #print("Relative Disty: %d" % relative_disty)
 
     angle = math.atan2(relative_disty, relative_distx)
     angle_degree = math.degrees(angle)
@@ -116,6 +116,7 @@ def main():
     initialize_open()
     global distance_b, distance_g, distance_gop, angle_ball, angle_goal, angle_gop
     clock = time.clock()
+    ball_lost_sent = False
     distance_b = 0
     distance_g = 0
     angle_ball = 0
@@ -131,6 +132,7 @@ def main():
         blob_goal_opp = find_goal_opp(img)
 
         if blob_ball:
+            ball_lost_sent = False
             for blob in blob_ball:
                 distance_b = distance_ball(blob)
                 angle_ball = -(angle(blob) - 180)
@@ -138,12 +140,18 @@ def main():
                     angle_ball = 0
                 elif distance_b < 30 and distance_b > -30:
                     angle_ball = 0
-                print("Distance Ball: %d" % distance_b)
-                print("Angle Ball: %d" % angle_ball)
+                #print("Distance Ball: %d" % distance_b)
+                #print("Angle Ball: %d" % angle_ball)
 
         elif not blob_ball:
             distance_b = 0
             angle_ball = 0
+            if not ball_lost_sent:
+                data = "0 0\n"
+                print("Sending: ", data)
+                uart.write(data)
+                ball_lost_sent = True
+                pyb.delay(50)
 
         if blob_goal:
             for blob in blob_goal:
@@ -168,11 +176,11 @@ def main():
             distance_g = 0
             angle_goal = 0
 
-    if distance_b != 0 and angle_ball != 0:
-        data = "{} {} {} {} {} {}\n".format(distance_b, angle_ball, distance_g, angle_goal, distance_gop, angle_gop)
-        print("Sending: ", data)
-        uart.write(data)
-        pyb.delay(50)
+        if distance_b != 0 and angle_ball != 0:
+            data = "{} {}\n".format(distance_b, angle_ball)
+            print("Sending: ", data)
+            uart.write(data)
+            pyb.delay(50)
 
 if __name__ == "__main__":
     main()
