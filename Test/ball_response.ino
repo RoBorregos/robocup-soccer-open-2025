@@ -93,21 +93,10 @@ void loop() {
     char* token = strtok(buffer, " ");
     ball_distance = atof(token);
 
-
-
     token = strtok(NULL, " ");
     ball_angle = atof(token);
 
-
-    token = strtok(NULL, " ");
-    goal_angle = atof(token);
-
-
-    token = strtok(NULL, " ");
-    goal_distance = atof(token);
-
-
-    open_ball_seen = (ball_distance != 0 && ball_angle != 0);
+    open_ball_seen = (ball_distance != 0 || ball_angle != 0);
     goal_seen = (goal_angle != 0 && goal_distance != 0);
     delay(50);
 
