@@ -179,7 +179,7 @@ def main():
         if distance_b != 0 and angle_ball != 0:
             data = "{} {}\n".format(distance_b, angle_ball)
             print("Sending: ", data)
-            uart.write(data)
+            uart.write("{:.1f} {:.1f}\n".format(distance_b, angle_ball))
             pyb.delay(50)
 
 if __name__ == "__main__":
