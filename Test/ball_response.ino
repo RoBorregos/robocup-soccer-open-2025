@@ -66,10 +66,10 @@ void setup() {
   dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
   bno.InitializeBNO();  
-  sensors.setThreshold(FRONT, 245);
-  sensors.setThreshold(LEFT,  700);
-  sensors.setThreshold(RIGHT, 475);
-  sensors.setThreshold(BACK,  405);
+  sensors.setThreshold(FRONT, 320);
+  sensors.setThreshold(LEFT,  720);
+  sensors.setThreshold(RIGHT, 405);
+  sensors.setThreshold(BACK,  430);
   delay(1000);
 
 }

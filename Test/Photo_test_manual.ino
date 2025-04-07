@@ -27,9 +27,9 @@ void loop() {
   float rightAvg = getAverage(rightPins, 4);
   float backAvg  = getAverage(backPins, 4);
 
-  Serial.print("FRONT: "); Serial.println(frontAvg);
+  Serial.print(" | FRONT: "); Serial.println(frontAvg);
   Serial.print(" | LEFT: "); Serial.println(leftAvg);
-  Serial.print(" | RIGHT: "); Serial.print(rightAvg);
+  Serial.print(" | RIGHT: "); Serial.println(rightAvg);
   Serial.print(" | BACK: "); Serial.println(backAvg);
 
   delay(500); // medio segundo entre lecturas
