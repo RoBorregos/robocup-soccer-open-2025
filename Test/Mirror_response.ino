@@ -48,6 +48,7 @@ Servo dribbler;
 
 
 PID pid(4, 0.01 , 0.6, 500); //0.6, 0.01, 0.6, 200
+PID pid2()
 
 
 Motors motors(
@@ -56,12 +57,12 @@ Motors motors(
     MOTOR3_PWM, MOTOR3_IN1, MOTOR3_IN2,
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
     
-PhotoSensors sensors(front, left, right, back);
+//PhotoSensors sensors(front, left, right, back);
 
 
 void setup() {
   Serial.begin(115200);
-  Serial1.begin(115200);
+  Serial2.begin(115200);
   dribbler.attach(6);
   dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
@@ -72,7 +73,7 @@ void setup() {
   sensors.setThreshold(RIGHT, 590);
   sensors.setThreshold(BACK,  610);
 */
-  delay(1000);
+  delay(4000);
 
 }
 
@@ -82,9 +83,9 @@ void loop() {
   double current_yaw = bno.GetYaw();
 
 
-  if (Serial1.available()){
+  if (Serial2.available()){
     Serial.println("Reading data from OpenMV...");
-    int bytesRead = Serial1.readBytesUntil('\n', buffer, sizeof(buffer));
+    int bytesRead = Serial2.readBytesUntil('\n', buffer, sizeof(buffer));
     buffer[bytesRead] = '\0';
 
     Serial.print("Raw Data: ");
@@ -93,10 +94,21 @@ void loop() {
     char* token = strtok(buffer, " ");
     ball_distance = atof(token);
 
+
+
     token = strtok(NULL, " ");
     ball_angle = atof(token);
 
-    open_ball_seen = (ball_distance != 0 || ball_angle != 0);
+
+    token = strtok(NULL, " ");
+    goal_angle = atof(token);
+
+
+    token = strtok(NULL, " ");
+    goal_distance = atof(token);
+
+
+    open_ball_seen = (ball_distance != 0 && ball_angle != 0);
     goal_seen = (goal_angle != 0 && goal_distance != 0);
     delay(50);
 
@@ -107,12 +119,11 @@ void loop() {
   double speed_goal = 155;
   double speed_ball = 100;
  
-//For camera 2 eliminate the minus in the ponderated_ball
 
   if (open_ball_seen){
       double error_ball = ball_angle + current_yaw;
       double differential_ball = error_ball * 0.001; //Calcular el error diferecial
-      ponderated_ball = -(ball_angle + differential_ball);
+      ponderated_ball = (ball_angle + differential_ball);
       motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
       dribbler.writeMicroseconds(servo_mid);
   } else {
@@ -121,7 +132,7 @@ void loop() {
         motors.SetAllSpeeds(80);
         motors.MoveBackward();
       }
-      dribbler.writeMicroseconds(servo_mid);
+      //dribbler.writeMicroseconds(servo_mid);
     }
 /*
     if (sensors.isLineDetected(FRONT)) {

@@ -7,6 +7,7 @@
 #include <cmath>
 //Incluir la libreria del servo para el Kicker
 
+
 float bno_angle = 0;
 unsigned long start_millis;
 unsigned long current_millis;
@@ -17,7 +18,10 @@ float adjust_angle = 0;
 float angle_degrees = 0;
 float ponderated_ball = 0;
 float ponderated_goal = 0;
+float ponderated_dribbler = 0;
 float ball_angle = 0;
+float dribbler_distance = 0;
+float dribbler_angle = 0;
 float goal_angle = 0;
 float ball_distance = 0;
 float last_distance = 0;
@@ -27,19 +31,20 @@ float goal_distance = 0;
 float distance_pixels = 0;
 float differential_ball = 0;
 float differential_goal = 0;
+float differential_dribbler = 0;
 bool open_ball_seen = false;
+bool dribbler_ball_seen = false;
 bool goal_seen = false;
-bool pixy_seen = false;
-const int BUFFER_SIZE = 50;
-char buffer[BUFFER_SIZE];
+bool ball_captured = false;
+const int BUFFER_SIZE = 100;
+char buffer1[BUFFER_SIZE];
+char buffer2[BUFFER_SIZE];
 const int servo_min = 1000;
 const int servo_mid = 1500;
 const int servo_max = 2000;
 int time_shoot = 2000;
-uint8_t front[2] = {A8, A9};
-uint8_t right[4] = {A3, A12, A13, A14};
-uint8_t left[4] = {A6, A15, A16, A17};
-uint8_t back[4] = {A0, A1, A2, A7};
+String serial1_line = "";
+String serial2_line = "";
 
 
 BNO055 bno;
@@ -48,6 +53,7 @@ Servo dribbler;
 
 
 PID pid(4, 0.01 , 0.6, 500); //0.6, 0.01, 0.6, 200
+PID pid2();
 
 
 Motors motors(
@@ -56,11 +62,12 @@ Motors motors(
     MOTOR3_PWM, MOTOR3_IN1, MOTOR3_IN2,
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
     
-PhotoSensors sensors(front, left, right, back);
+//PhotoSensors sensors(front, left, right, back);
 
 
 void setup() {
   Serial.begin(115200);
+  Serial2.begin(115200);
   Serial1.begin(115200);
   dribbler.attach(6);
   dribbler.writeMicroseconds(servo_min);
@@ -80,49 +87,36 @@ void setup() {
 void loop() { 
   bno.GetBNOData();
   double current_yaw = bno.GetYaw();
-
-
-  if (Serial1.available()){
-    Serial.println("Reading data from OpenMV...");
-    int bytesRead = Serial1.readBytesUntil('\n', buffer, sizeof(buffer));
-    buffer[bytesRead] = '\0';
-
-    Serial.print("Raw Data: ");
-    Serial.println(buffer);
-
-    char* token = strtok(buffer, " ");
-    ball_distance = atof(token);
-
-    token = strtok(NULL, " ");
-    ball_angle = atof(token);
-
-    open_ball_seen = (ball_distance != 0 || ball_angle != 0);
-    goal_seen = (goal_angle != 0 && goal_distance != 0);
-    delay(50);
-
-  }
+  readSerialLines();
 
   double error = bno.analize_error(setpoint,current_yaw);
   double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
-  double speed_goal = 155;
-  double speed_ball = 100;
+  double speed_goal = 200;
+  double speed_ball = 150;
  
-//For camera 2 eliminate the minus in the ponderated_ball
 
-  if (open_ball_seen){
+  if (open_ball_seen && !dribbler_ball_seen){
       double error_ball = ball_angle + current_yaw;
       double differential_ball = error_ball * 0.001; //Calcular el error diferecial
-      ponderated_ball = -(ball_angle + differential_ball);
+      ponderated_ball = (ball_angle + differential_ball);
       motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-      dribbler.writeMicroseconds(servo_mid);
+  } 
+  else if (dribbler_ball_seen){
+    double error_dribbler = dribbler_angle + current_yaw;
+    double differential_dribbler = error_dribbler * 0.001; //Calcular el error diferecial
+    ponderated_dribbler = -(dribbler_angle + differential_dribbler);
+    motors.MoveMotorsImu(ponderated_dribbler, abs(speed_ball), speed_w);
+    dribbler.writeMicroseconds(servo_mid);
   } else {
       motors.MoveMotorsImu(0,0,speed_w);
       if (speed_w == 0) {
-        motors.SetAllSpeeds(80);
-        motors.MoveBackward();
+        //motors.SetAllSpeeds(80);
+        //motors.MoveBackward();
+        motors.SetAllSpeeds(0);
+        motors.StopMotors();
       }
-      dribbler.writeMicroseconds(servo_mid);
     }
+}
 /*
     if (sensors.isLineDetected(FRONT)) {
       Serial.println("Línea al frente. Retrocede.");
@@ -142,5 +136,61 @@ void loop() {
       delay(300);
     }
        */
+
+void readSerialLines() {
+  // Leer desde Serial1
+  while (Serial1.available()) {
+    char c = Serial1.read();
+    if (c == '\n') {
+      processSerial1(serial1_line);
+      serial1_line = "";
+    } else {
+      serial1_line += c;
+    }
+  }
+
+  // Leer desde Serial2
+  while (Serial2.available()) {
+    char c = Serial2.read();
+    if (c == '\n') {
+      processSerial2(serial2_line);
+      serial2_line = "";
+    } else {
+      serial2_line += c;
+    }
+  }
 }
+
+void processSerial1(String line) {
+  float dist, ang;
+  int parsed = sscanf(line.c_str(), "%f %f", &dist, &ang);
+  if (parsed == 2) {
+    dribbler_distance = dist;
+    Serial.print("ball_distance 1 ");
+    Serial.println(dribbler_distance);
+    dribbler_angle = ang;
+    Serial.print("Angulo 1 ");
+    Serial.println(dribbler_angle);
+    dribbler_ball_seen = (dist != 0 && ang != 0);
+    ball_captured = (dist <= 20 && ang == 0);
+  }
+}
+
+void processSerial2(String line) {
+  float dist, ang, g_ang, g_dist;
+  int parsed = sscanf(line.c_str(), "%f %f %f %f", &dist, &ang, &g_ang, &g_dist);
+  if (parsed == 4) {
+    ball_distance = dist;
+    Serial.print("ball_distance 2 ");
+    Serial.println(ball_distance);
+    ball_angle = ang;
+    Serial.print("ball_distance 2 ");
+    Serial.println(ball_angle);
+    goal_angle = g_ang;
+    goal_distance = g_dist;
+    open_ball_seen = (dist != 0 && ang != 0);
+    goal_seen = (g_ang != 0 && g_dist != 0);
+  }
+}
+
 
