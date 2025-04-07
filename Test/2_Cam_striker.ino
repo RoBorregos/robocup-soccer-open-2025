@@ -43,6 +43,8 @@ const int servo_min = 1000;
 const int servo_mid = 1500;
 const int servo_max = 2000;
 int time_shoot = 2000;
+String serial1_line = "";
+String serial2_line = "";
 
 
 BNO055 bno;
@@ -85,69 +87,12 @@ void setup() {
 void loop() { 
   bno.GetBNOData();
   double current_yaw = bno.GetYaw();
-  if (!dribbler_ball_seen) {
-    if (Serial2.available()){
-      Serial.println("Reading data from OpenMV 1...");
-      int bytesRead = Serial2.readBytesUntil('\n', buffer2, sizeof(buffer2));
-      buffer2[bytesRead] = '\0';
-
-      Serial.print("Raw Data 1: ");
-      Serial.println(buffer2);
-
-      char* token = strtok(buffer2, " ");
-      ball_distance = atof(token);
-
-
-
-      token = strtok(NULL, " ");
-      ball_angle = atof(token);
-
-
-      token = strtok(NULL, " ");
-      goal_angle = atof(token);
-
-
-      token = strtok(NULL, " ");
-      goal_distance = atof(token);
-
-
-      open_ball_seen = (ball_distance != 0 && ball_angle != 0);
-      goal_seen = (goal_angle != 0 && goal_distance != 0);
-      delay(50);
-    }
-  }
-
-  if (Serial1.available()){
-    Serial.println("Reading data from OpenMV 2...");
-    int bytesRead = Serial1.readBytesUntil('\n', buffer1, sizeof(buffer1));
-    buffer1[bytesRead] = '\0';
-
-    Serial.print("Raw Data 2: ");
-    Serial.println(buffer1);
-
-    char* token = strtok(buffer1, " ");
-    dribbler_distance = atof(token);
-
-    token = strtok(NULL, " ");
-    dribbler_angle = atof(token);
-
-    dribbler_ball_seen = (dribbler_distance != 0 && dribbler_angle != 0);
-    if (dribbler_distance == 0 && dribbler_angle == 0) {
-      dribbler_ball_seen = false;
-    }
-    
-    ball_captured = (dribbler_distance <= 20  && dribbler_angle == 0);
-    if (dribbler_angle != 0) {
-      ball_captured = false;
-    }
-    delay(50);
-  }
-
+  readSerialLines();
 
   double error = bno.analize_error(setpoint,current_yaw);
   double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
-  double speed_goal = 155;
-  double speed_ball = 100;
+  double speed_goal = 200;
+  double speed_ball = 150;
  
 
   if (open_ball_seen && !dribbler_ball_seen){
@@ -191,4 +136,61 @@ void loop() {
       delay(300);
     }
        */
+
+void readSerialLines() {
+  // Leer desde Serial1
+  while (Serial1.available()) {
+    char c = Serial1.read();
+    if (c == '\n') {
+      processSerial1(serial1_line);
+      serial1_line = "";
+    } else {
+      serial1_line += c;
+    }
+  }
+
+  // Leer desde Serial2
+  while (Serial2.available()) {
+    char c = Serial2.read();
+    if (c == '\n') {
+      processSerial2(serial2_line);
+      serial2_line = "";
+    } else {
+      serial2_line += c;
+    }
+  }
+}
+
+void processSerial1(String line) {
+  float dist, ang;
+  int parsed = sscanf(line.c_str(), "%f %f", &dist, &ang);
+  if (parsed == 2) {
+    dribbler_distance = dist;
+    Serial.print("ball_distance 1 ");
+    Serial.println(dribbler_distance);
+    dribbler_angle = ang;
+    Serial.print("Angulo 1 ");
+    Serial.println(dribbler_angle);
+    dribbler_ball_seen = (dist != 0 && ang != 0);
+    ball_captured = (dist <= 20 && ang == 0);
+  }
+}
+
+void processSerial2(String line) {
+  float dist, ang, g_ang, g_dist;
+  int parsed = sscanf(line.c_str(), "%f %f %f %f", &dist, &ang, &g_ang, &g_dist);
+  if (parsed == 4) {
+    ball_distance = dist;
+    Serial.print("ball_distance 2 ");
+    Serial.println(ball_distance);
+    ball_angle = ang;
+    Serial.print("ball_distance 2 ");
+    Serial.println(ball_angle);
+    goal_angle = g_ang;
+    goal_distance = g_dist;
+    open_ball_seen = (dist != 0 && ang != 0);
+    goal_seen = (g_ang != 0 && g_dist != 0);
+  }
+}
+
 
