@@ -13,8 +13,8 @@ from pyb import UART
 uart = UART(3, 115200, timeout_char=0)
 uart.init(115200, bits=8, parity=None, stop=1)
 threshold = (15, 85, 14, 127, 0, 127) #(49, 84, 16, 39, 6, 100)#9, 93, 26, 92, -34, 78)(43, 100, 14, 39, -53, 76) (16, 100, 12, 127, -11, 127) (0, 100, -128, 127, -128, 127)
-threshold_1 = (0, 35, 33, -10, -122, -14) #Azul
-threshold_2 = (41, 99, -52, 127, 15, 127) #(68, 100, 16, -10, -20, 116) #(41, 99, -52, 127, 15, 127) (99, 25, 20, -83, 127, 40) Amarillo esta bien para 0,0,0
+threshold_2 = (0, 35, 33, -10, -122, -14) #Azul
+threshold_1 = (41, 99, -52, 127, 15, 127) #(68, 100, 16, -10, -20, 116) #(41, 99, -52, 127, 15, 127) (99, 25, 20, -83, 127, 40) Amarillo esta bien para 0,0,0
 
 # The reference point for angle and distance are set in the folloxing coordinates
 
@@ -132,6 +132,12 @@ def main():
                 angle_goal = -(angle(blob) - 180)
                 #print("Distance Goal: %d" % distance_g)
                 #print("Angle Goal: %d" % angle_goal)
+                if angle_goal < 5 and angle_goal > -5:
+                    angle_goal = 0
+                    
+        elif not blob_goal:
+            distance_g = 0
+            angle_goal = 0
 
         if blob_goal_opp:
             for blob in blob_goal_opp:

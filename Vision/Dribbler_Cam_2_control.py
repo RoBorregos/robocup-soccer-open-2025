@@ -12,7 +12,7 @@ from pyb import UART
 
 uart = UART(3, 115200, timeout_char=0)
 uart.init(115200, bits=8, parity=None, stop=1)
-threshold = (65, 37, 15, 45, 8, 28) #(49, 84, 16, 39, 6, 100)#9, 93, 26, 92, -34, 78)(43, 100, 14, 39, -53, 76) (16, 100, 12, 127, -11, 127) (0, 100, -128, 127, -128, 127)
+threshold = (0, 99, -117, 127, 15, 127) #(49, 84, 16, 39, 6, 100)#9, 93, 26, 92, -34, 78)(43, 100, 14, 39, -53, 76) (16, 100, 12, 127, -11, 127) (0, 100, -128, 127, -128, 127)
 threshold_2 = (0, 35, 33, -10, -122, -14) #Azul
 threshold_1 = (50, 73, -55, 48, 8, 28) #(4, 94, 29, 46, 4, 45) (99, 25, 20, -83, 127, 40) Amarillo esta bien para 0,0,0
 
@@ -22,8 +22,8 @@ threshold_1 = (50, 73, -55, 48, 8, 28) #(4, 94, 29, 46, 4, 45) (99, 25, 20, -83,
 
 # X and Y coordinates for a 50° of Dribbler cam
 
-X_CENTER = 157 #182
-Y_CENTER = 180 #175 #166
+X_CENTER = 162 #168 #157 #182
+Y_CENTER = 172 #177 #180 #175 #166
 
 # X and Y coordinates for a 60° of Dribbler cam
 
@@ -115,8 +115,7 @@ def angle(blob):
 def main():
     initialize_open()
     global distance_b, distance_g, distance_gop, angle_ball, angle_goal, angle_gop
-    clock = time.clock()
-    ball_lost_sent = False
+    clock = time.clock() 
     distance_b = 0
     distance_g = 0
     angle_ball = 0
@@ -132,7 +131,6 @@ def main():
         blob_goal_opp = find_goal_opp(img)
 
         if blob_ball:
-            ball_lost_sent = False
             for blob in blob_ball:
                 distance_b = distance_ball(blob)
                 angle_ball = -(angle(blob) - 180)
@@ -140,18 +138,12 @@ def main():
                     angle_ball = 0
                 elif distance_b < 30 and distance_b > -30:
                     angle_ball = 0
-                #print("Distance Ball: %d" % distance_b)
-                #print("Angle Ball: %d" % angle_ball)
+                print("Distance Ball: %d" % distance_b)
+                print("Angle Ball: %d" % angle_ball)
 
         elif not blob_ball:
             distance_b = 0
             angle_ball = 0
-            if not ball_lost_sent:
-                data = "0 0\n"
-                print("Sending: ", data)
-                uart.write(data)
-                ball_lost_sent = True
-                pyb.delay(50)
 
         if blob_goal:
             for blob in blob_goal:
@@ -176,11 +168,11 @@ def main():
             distance_g = 0
             angle_goal = 0
 
-        if distance_b != 0 and angle_ball != 0:
-            data = "{} {}\n".format(distance_b, angle_ball)
-            print("Sending: ", data)
-            uart.write("{:.1f} {:.1f}\n".format(distance_b, angle_ball))
-            pyb.delay(50)
+        data = "{:.1f} {:.1f}\n".format(distance_b, angle_ball)
+        print("Sending: ", data)
+        uart.write(data)
+        pyb.delay(50)
+
 
 if __name__ == "__main__":
     main()
