@@ -52,8 +52,8 @@ Servo dribbler;
 //Photo photo;
 
 
-PID pid(4, 0.01 , 0.6, 500); //0.6, 0.01, 0.6, 200
-PID pid2();
+PID pid(6, 0.01 , 0.6, 500); //0.6, 0.01, 0.6, 200
+PID pid2(5, 0.01 , 0.6, 500);
 
 
 Motors motors(
@@ -90,24 +90,42 @@ void loop() {
   readSerialLines();
 
   double error = bno.analize_error(setpoint,current_yaw);
-  double speed_w = pid.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
+  double speed_w = pid.Calculate(setpoint, error);
+  double speed_d = pid2.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
   double speed_goal = 200;
   double speed_ball = 150;
  
 
   if (open_ball_seen && !dribbler_ball_seen){
-      double error_ball = ball_angle + current_yaw;
-      double differential_ball = error_ball * 0.001; //Calcular el error diferecial
-      ponderated_ball = (ball_angle + differential_ball);
-      motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-  } 
-  else if (dribbler_ball_seen){
+    double error_ball = ball_angle + current_yaw;
+    double differential_ball = error_ball * 0.001; //Calcular el error diferecial
+    ponderated_ball = (ball_angle + differential_ball);
+    setpoint = ponderated_ball;
+    motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
+    dribbler.writeMicroseconds(servo_mid);
+  } else if (dribbler_ball_seen){
     double error_dribbler = dribbler_angle + current_yaw;
     double differential_dribbler = error_dribbler * 0.001; //Calcular el error diferecial
     ponderated_dribbler = -(dribbler_angle + differential_dribbler);
-    motors.MoveMotorsImu(ponderated_dribbler, abs(speed_ball), speed_w);
+    setpoint = ponderated_dribbler;
+    motors.MoveMotorsImu(ponderated_dribbler, abs(speed_ball), speed_d);
     dribbler.writeMicroseconds(servo_mid);
-  } else {
+    if (ball_captured){
+      if (goal_seen && goal_angle != 0){
+        double error_goal= goal_angle + current_yaw;
+        double differential_goal = error_goal * 0.001; //Calcular el error diferecial
+        ponderated_goal = (goal_angle + differential_goal);
+        setpoint = ponderated_goal;
+        motors.MoveMotorsImu(ponderated_goal, abs(speed_ball), speed_w);
+      } else if (goal_angle == 0 && goal_seen){
+        motors.StopMotors();
+        digitalWrite(KICKER_PIN, HIGH);
+        delay(20);
+        digitalWrite(KICKER_PIN, LOW);
+        dribbler.writeMicroseconds(servo_min);
+      }
+    }
+} else {
       motors.MoveMotorsImu(0,0,speed_w);
       if (speed_w == 0) {
         //motors.SetAllSpeeds(80);
@@ -171,8 +189,11 @@ void processSerial1(String line) {
     dribbler_angle = ang;
     Serial.print("Angulo 1 ");
     Serial.println(dribbler_angle);
-    dribbler_ball_seen = (dist != 0 && ang != 0);
-    ball_captured = (dist <= 20 && ang == 0);
+   dribbler_ball_seen = !(dist == 0.0f || ang == 0.0f); // Mejor expresado
+    ball_captured = (dribbler_distance <= 20.0f && dribbler_angle == 0.0f && dribbler_distance > 0); // Actualiza SIEMPRE
+  } else {
+    dribbler_ball_seen = false;
+    ball_captured = false;
   }
 }
 
