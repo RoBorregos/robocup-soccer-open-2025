@@ -79,12 +79,12 @@ void setup() {
   sensors.setThreshold(RIGHT, 590);
   sensors.setThreshold(BACK,  610);
 */
-  delay(1000);
-
+  delay(2000);
 }
 
 
 void loop() { 
+  dribbler.writeMicroseconds(servo_mid);
   bno.GetBNOData();
   double current_yaw = bno.GetYaw();
   readSerialLines();
@@ -102,14 +102,12 @@ void loop() {
     ponderated_ball = (ball_angle + differential_ball);
     setpoint = ponderated_ball;
     motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-    dribbler.writeMicroseconds(servo_mid);
   } else if (dribbler_ball_seen){
     double error_dribbler = dribbler_angle + current_yaw;
     double differential_dribbler = error_dribbler * 0.001; //Calcular el error diferecial
     ponderated_dribbler = -(dribbler_angle + differential_dribbler);
     setpoint = ponderated_dribbler;
     motors.MoveMotorsImu(ponderated_dribbler, abs(speed_ball), speed_d);
-    dribbler.writeMicroseconds(servo_mid);
     if (ball_captured){
       if (goal_seen && goal_angle != 0){
         double error_goal= goal_angle + current_yaw;
@@ -119,10 +117,9 @@ void loop() {
         motors.MoveMotorsImu(ponderated_goal, abs(speed_ball), speed_w);
       } else if (goal_angle == 0 && goal_seen){
         motors.StopMotors();
-        digitalWrite(KICKER_PIN, HIGH);
-        delay(20);
-        digitalWrite(KICKER_PIN, LOW);
-        dribbler.writeMicroseconds(servo_min);
+        //digitalWrite(KICKER_PIN, HIGH);
+        //delay(20);
+        //digitalWrite(KICKER_PIN, LOW);
       }
     }
 } else {
