@@ -45,6 +45,10 @@ const int servo_max = 2000;
 int time_shoot = 2000;
 String serial1_line = "";
 String serial2_line = "";
+uint8_t front[2] = {A8, A9};
+uint8_t right[4] = {A3, A12, A13, A14};
+uint8_t left[4] = {A6, A15, A16, A17};
+
 
 
 BNO055 bno;
@@ -62,7 +66,7 @@ Motors motors(
     MOTOR3_PWM, MOTOR3_IN1, MOTOR3_IN2,
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
     
-//PhotoSensors sensors(front, left, right, back);
+PhotoSensors sensors(front, left, right);
 
 
 void setup() {
@@ -73,12 +77,12 @@ void setup() {
   dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
   bno.InitializeBNO(); 
-/* 
+ 
   sensors.setThreshold(FRONT, 600);
   sensors.setThreshold(LEFT,  580);
   sensors.setThreshold(RIGHT, 590);
-  sensors.setThreshold(BACK,  610);
-*/
+  //sensors.setThreshold(BACK,  610);
+
   delay(1000);
 
 }
@@ -135,25 +139,22 @@ void loop() {
       }
     }
 }
-/*
-    if (sensors.isLineDetected(FRONT)) {
-      Serial.println("Línea al frente. Retrocede.");
-      motors.MoveMotorsImu(180, 200, speed_w);
-      delay(300);
-    } else if (sensors.isLineDetected(LEFT)) {
-      Serial.println("Línea a la izquierda. Gira a la derecha.");
-      motors.MoveMotorsImu(90, 200, speed_w);
-      delay(300);
-    } else if (sensors.isLineDetected(RIGHT)) {
-      Serial.println("Línea a la derecha. Gira a la izquierda.");
-      motors.MoveMotorsImu(270, 200, speed_w);
-      delay(300);
-    } else if (sensors.isLineDetected(BACK)) {
-      Serial.println("Línea atrás. Avanza.");
-      motors.MoveMotorsImu(0, 200, speed_w);
-      delay(300);
-    }
-       */
+
+if (sensors.isLineDetected(FRONT) == true) {
+  Serial.println("Line detected in front!");
+  motors.SetAllSpeeds(120);
+  motors.MoveBackward();
+  delay(150);
+} else if (sensors.isLineDetected(LEFT) == true) {
+    Serial.println("Line detected on left!");
+    motors.SetAllSpeeds(120);
+    motors.MoveRight();
+    delay(150);
+  } else if (sensors.isLineDetected(RIGHT) == true) {
+    Serial.println("Line detected on right!");
+    motors.SetAllSpeeds(120);
+    motors.MoveLeft();
+    delay(150);
 
 void readSerialLines() {
   // Leer desde Serial1
