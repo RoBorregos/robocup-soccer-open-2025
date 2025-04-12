@@ -81,16 +81,10 @@ void setup() {
   sensors.setThreshold(FRONT, 600);
   sensors.setThreshold(LEFT,  580);
   sensors.setThreshold(RIGHT, 590);
-<<<<<<< HEAD
   //sensors.setThreshold(BACK,  610);
 
   delay(1000);
 
-=======
-  sensors.setThreshold(BACK,  610);
-*/
-  delay(2000);
->>>>>>> e0ca7f84fc29e0e3d52a46a8a384c7cc11b58310
 }
 
 
