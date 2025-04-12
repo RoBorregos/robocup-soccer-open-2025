@@ -48,6 +48,7 @@ String serial2_line = "";
 uint8_t front[2] = {A8, A9};
 uint8_t right[4] = {A3, A12, A13, A14};
 uint8_t left[4] = {A6, A15, A16, A17};
+uint8_t back[4] = {A0, A1, A2, A7};
 
 
 
@@ -66,7 +67,7 @@ Motors motors(
     MOTOR3_PWM, MOTOR3_IN1, MOTOR3_IN2,
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
     
-PhotoSensors sensors(front, left, right);
+PhotoSensors sensors(front, left, right, back);
 
 
 void setup() {
@@ -78,9 +79,9 @@ void setup() {
   motors.InitializeMotors();
   bno.InitializeBNO(); 
  
-  sensors.setThreshold(FRONT, 600);
-  sensors.setThreshold(LEFT,  580);
-  sensors.setThreshold(RIGHT, 590);
+  sensors.setThreshold(FRONT, 430);
+  sensors.setThreshold(LEFT,  700);
+  sensors.setThreshold(RIGHT, 700);
   //sensors.setThreshold(BACK,  610);
 
   delay(1000);
@@ -98,7 +99,7 @@ void loop() {
   double speed_w = pid.Calculate(setpoint, error);
   double speed_d = pid2.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
   double speed_goal = 200;
-  double speed_ball = 150;
+  double speed_ball = 200;
  
 
   if (open_ball_seen && !dribbler_ball_seen){
@@ -119,12 +120,12 @@ void loop() {
         double differential_goal = error_goal * 0.001; //Calcular el error diferecial
         ponderated_goal = (goal_angle + differential_goal);
         setpoint = ponderated_goal;
-        motors.MoveMotorsImu(ponderated_goal, abs(speed_ball), speed_w);
+        motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
       } else if (goal_angle == 0 && goal_seen){
         motors.StopMotors();
-        //digitalWrite(KICKER_PIN, HIGH);
-        //delay(20);
-        //digitalWrite(KICKER_PIN, LOW);
+        digitalWrite(KICKER_PIN, HIGH);
+        delay(20);
+        digitalWrite(KICKER_PIN, LOW);
       }
     }
 } else {
@@ -136,9 +137,8 @@ void loop() {
         motors.StopMotors();
       }
     }
-}
-
-if (sensors.isLineDetected(FRONT) == true) {
+  
+  if (sensors.isLineDetected(FRONT) == true) {
   Serial.println("Line detected in front!");
   motors.SetAllSpeeds(120);
   motors.MoveBackward();
@@ -153,6 +153,10 @@ if (sensors.isLineDetected(FRONT) == true) {
     motors.SetAllSpeeds(120);
     motors.MoveLeft();
     delay(150);
+  }
+}
+
+
 
 void readSerialLines() {
   // Leer desde Serial1
