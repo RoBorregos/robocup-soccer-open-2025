@@ -45,11 +45,6 @@ const int servo_max = 2000;
 int time_shoot = 2000;
 String serial1_line = "";
 String serial2_line = "";
-uint8_t front[2] = {A8, A9};
-uint8_t right[4] = {A3, A12, A13, A14};
-uint8_t left[4] = {A6, A15, A16, A17};
-uint8_t back[4] = {A0, A1, A2, A7};
-
 
 
 BNO055 bno;
@@ -67,7 +62,7 @@ Motors motors(
     MOTOR3_PWM, MOTOR3_IN1, MOTOR3_IN2,
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
     
-PhotoSensors sensors(front, left, right, back);
+//PhotoSensors sensors(front, left, right, back);
 
 
 void setup() {
@@ -78,14 +73,13 @@ void setup() {
   dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
   bno.InitializeBNO(); 
- 
-  sensors.setThreshold(FRONT, 430);
-  sensors.setThreshold(LEFT,  700);
-  sensors.setThreshold(RIGHT, 700);
-  //sensors.setThreshold(BACK,  610);
-
-  delay(1000);
-
+/* 
+  sensors.setThreshold(FRONT, 600);
+  sensors.setThreshold(LEFT,  580);
+  sensors.setThreshold(RIGHT, 590);
+  sensors.setThreshold(BACK,  610);
+*/
+  delay(2000);
 }
 
 
@@ -99,64 +93,50 @@ void loop() {
   double speed_w = pid.Calculate(setpoint, error);
   double speed_d = pid2.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
   double speed_goal = 200;
-  double speed_ball = 200;
+  double speed_ball = 150;
  
 
-  if (open_ball_seen && !dribbler_ball_seen){
-    double error_ball = ball_angle + current_yaw;
-    double differential_ball = error_ball * 0.001; //Calcular el error diferecial
-    ponderated_ball = (ball_angle + differential_ball);
-    setpoint = ponderated_ball;
-    motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
-  } else if (dribbler_ball_seen){
-    double error_dribbler = dribbler_angle + current_yaw;
-    double differential_dribbler = error_dribbler * 0.001; //Calcular el error diferecial
-    ponderated_dribbler = -(dribbler_angle + differential_dribbler);
-    setpoint = ponderated_dribbler;
-    motors.MoveMotorsImu(ponderated_dribbler, abs(speed_ball), speed_d);
-    if (ball_captured){
       if (goal_seen && goal_angle != 0){
         double error_goal= goal_angle + current_yaw;
         double differential_goal = error_goal * 0.001; //Calcular el error diferecial
         ponderated_goal = (goal_angle + differential_goal);
         setpoint = ponderated_goal;
-        motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
+        motors.MoveMotorsImu(ponderated_goal, abs(speed_ball), speed_w);
       } else if (goal_angle == 0 && goal_seen){
         motors.StopMotors();
-        digitalWrite(KICKER_PIN, HIGH);
-        delay(20);
-        digitalWrite(KICKER_PIN, LOW);
+        //digitalWrite(KICKER_PIN, HIGH);
+        //delay(20);
+        //digitalWrite(KICKER_PIN, LOW);
+      } else {
+        motors.MoveMotorsImu(0,0,speed_w);
+        if (speed_w == 0) {
+          //motors.SetAllSpeeds(80);
+          //motors.MoveBackward();
+          motors.SetAllSpeeds(0);
+          motors.StopMotors();
+        }
       }
-    }
-} else {
-      motors.MoveMotorsImu(0,0,speed_w);
-      if (speed_w == 0) {
-        //motors.SetAllSpeeds(80);
-        //motors.MoveBackward();
-        motors.SetAllSpeeds(0);
-        motors.StopMotors();
-      }
-    }
-  
-  if (sensors.isLineDetected(FRONT) == true) {
-  Serial.println("Line detected in front!");
-  motors.SetAllSpeeds(120);
-  motors.MoveBackward();
-  delay(150);
-} else if (sensors.isLineDetected(LEFT) == true) {
-    Serial.println("Line detected on left!");
-    motors.SetAllSpeeds(120);
-    motors.MoveRight();
-    delay(150);
-  } else if (sensors.isLineDetected(RIGHT) == true) {
-    Serial.println("Line detected on right!");
-    motors.SetAllSpeeds(120);
-    motors.MoveLeft();
-    delay(150);
-  }
-}
+    }  
 
-
+/*
+    if (sensors.isLineDetected(FRONT)) {
+      Serial.println("Línea al frente. Retrocede.");
+      motors.MoveMotorsImu(180, 200, speed_w);
+      delay(300);
+    } else if (sensors.isLineDetected(LEFT)) {
+      Serial.println("Línea a la izquierda. Gira a la derecha.");
+      motors.MoveMotorsImu(90, 200, speed_w);
+      delay(300);
+    } else if (sensors.isLineDetected(RIGHT)) {
+      Serial.println("Línea a la derecha. Gira a la izquierda.");
+      motors.MoveMotorsImu(270, 200, speed_w);
+      delay(300);
+    } else if (sensors.isLineDetected(BACK)) {
+      Serial.println("Línea atrás. Avanza.");
+      motors.MoveMotorsImu(0, 200, speed_w);
+      delay(300);
+    }
+       */
 
 void readSerialLines() {
   // Leer desde Serial1
@@ -218,4 +198,3 @@ void processSerial2(String line) {
 }
 
 
-//te amo emil
