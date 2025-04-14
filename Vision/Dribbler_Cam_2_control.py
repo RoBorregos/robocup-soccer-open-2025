@@ -12,7 +12,7 @@ from pyb import UART
 
 uart = UART(3, 115200, timeout_char=0)
 uart.init(115200, bits=8, parity=None, stop=1)
-threshold = (0, 99, -117, 127, 15, 127) #(49, 84, 16, 39, 6, 100)#9, 93, 26, 92, -34, 78)(43, 100, 14, 39, -53, 76) (16, 100, 12, 127, -11, 127) (0, 100, -128, 127, -128, 127)
+threshold = (6, 98, 13, 127, 14, 78) #(0, 99, -117, 127, 15, 127) #(49, 84, 16, 39, 6, 100)#9, 93, 26, 92, -34, 78)(43, 100, 14, 39, -53, 76) (16, 100, 12, 127, -11, 127) (0, 100, -128, 127, -128, 127)
 threshold_2 = (0, 35, 33, -10, -122, -14) #Azul
 threshold_1 = (50, 73, -55, 48, 8, 28) #(4, 94, 29, 46, 4, 45) (99, 25, 20, -83, 127, 40) Amarillo esta bien para 0,0,0
 
@@ -56,24 +56,24 @@ def initialize_open():
 def find_ball(img):
     blob_ball = img.find_blobs([threshold], area_threshold=30, merge=True) #Checar los valores de area y pixeles
     for blob in blob_ball:
-        img.draw_rectangle(blob.rect(), color = (255, 0, 0))
-        img.draw_cross(blob.cx(), blob.cy(), color = (255, 0, 0))
+        img.draw_rectangle(blob.rect(), color = (0, 0, 0))
+        img.draw_cross(blob.cx(), blob.cy(), color = (0, 0, 0))
 
     return blob_ball
 
 def find_goal(img):
     blob_goal = img.find_blobs([threshold_1], pixels_threshold=200, area_threshold=800, merge=True) #Checar los valores de area y pixeles
     for blob in blob_goal:
-        img.draw_rectangle(blob.rect(), color = (0, 255, 0))
-        img.draw_cross(blob.cx(), blob.cy(), color = (0, 255, 0))
+        img.draw_rectangle(blob.rect(), color = (0, 0, 0))
+        img.draw_cross(blob.cx(), blob.cy(), color = (0, 0, 0))
 
     return blob_goal
 
 def find_goal_opp(img):
     blob_goal_opp = img.find_blobs([threshold_2], pixels_threshold=200, area_threshold=800, merge=True) #Checar los valores de area y pixeles
     for blob in blob_goal_opp:
-        img.draw_rectangle(blob.rect(), color = (0, 0, 255))
-        img.draw_cross(blob.cx(), blob.cy(), color = (0, 0, 255))
+        img.draw_rectangle(blob.rect(), color = (0, 0, 0))
+        img.draw_cross(blob.cx(), blob.cy(), color = (0, 0, 0))
 
     return blob_goal_opp
 
@@ -115,7 +115,7 @@ def angle(blob):
 def main():
     initialize_open()
     global distance_b, distance_g, distance_gop, angle_ball, angle_goal, angle_gop
-    clock = time.clock() 
+    clock = time.clock()
     distance_b = 0
     distance_g = 0
     angle_ball = 0
@@ -127,8 +127,8 @@ def main():
         clock.tick()
         img = sensor.snapshot()
         blob_ball = find_ball(img)
-        blob_goal = find_goal(img)
-        blob_goal_opp = find_goal_opp(img)
+        #blob_goal = find_goal(img)
+        #blob_goal_opp = find_goal_opp(img)
 
         if blob_ball:
             for blob in blob_ball:
@@ -145,28 +145,7 @@ def main():
             distance_b = 0
             angle_ball = 0
 
-        if blob_goal:
-            for blob in blob_goal:
-                distance_g = distance_goal(blob)
-                angle_goal = -(angle(blob) - 180)
-                #print("Distance Goal: %d" % distance_g)
-                #print("Angle Goal: %d" % angle_goal)
 
-
-        elif not blob_goal:
-            distance_g = 0
-            angle_goal = 0
-
-        if blob_goal_opp:
-            for blob in blob_goal_opp:
-                distance_gop = distance_goal(blob)
-                angle_gop = -(angle(blob) - 180)
-                #print("Distance Opposite Goal: %d" % distance_gop)
-                #print("Angle Opposite Goal: %d" % angle_goal)
-
-        elif not blob_goal_opp:
-            distance_g = 0
-            angle_goal = 0
 
         data = "{:.1f} {:.1f}\n".format(distance_b, angle_ball)
         print("Sending: ", data)
