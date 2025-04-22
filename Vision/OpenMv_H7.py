@@ -145,7 +145,12 @@ def main():
                 angle_gop = -(angle(blob) - 180)
                 #print("Distance Opposite Goal: %d" % distance_gop)
                 #print("Angle Opposite Goal: %d" % angle_goal)
-
+                if angle_gop < 5 and angle_gop > -5:
+                    angle_gop = 0
+                    
+        elif not blob_goal_opp:
+            distance_gop = 0
+            angle_gop = 0 
         data = "{} {} {} {} {} {}\n".format(distance_b, angle_ball, distance_g, angle_goal, distance_gop, angle_gop)
         print("Sending: ", data)
         uart.write("{:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f}\n".format(distance_b, angle_ball, distance_g, angle_goal, distance_gop, angle_gop))
