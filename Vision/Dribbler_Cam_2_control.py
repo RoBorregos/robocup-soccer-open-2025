@@ -22,8 +22,8 @@ threshold_1 = (50, 73, -55, 48, 8, 28) #(4, 94, 29, 46, 4, 45) (99, 25, 20, -83,
 
 # X and Y coordinates for a 50° of Dribbler cam
 
-X_CENTER = 162 #168 #157 #182
-Y_CENTER = 172 #177 #180 #175 #166
+X_CENTER = 222 #162 #168 #157 #182
+Y_CENTER = 166 #172 #177 #180 #175 #166
 
 # X and Y coordinates for a 60° of Dribbler cam
 
@@ -44,7 +44,7 @@ def initialize_open():
     sensor.set_auto_gain(False)
     sensor.set_gainceiling(16)
     sensor.set_auto_whitebal(False)  # must be turned off for color tracking
-    sensor.set_auto_exposure(False, exposure_us=5000) #100
+    sensor.set_auto_exposure(False, exposure_us=4000) #100
     sensor.set_brightness(-5)
     sensor.set_hmirror(True)
     sensor.set_vflip(False)
@@ -102,8 +102,8 @@ def distance_goal(blob):
 def angle(blob):
     relative_distx = blob.cx() - X_CENTER
     relative_disty = blob.cy() - Y_CENTER
-    #print("Relative Distx: %d" % relative_distx)
-    #print("Relative Disty: %d" % relative_disty)
+    print("Relative Distx: %d" % relative_distx)
+    print("Relative Disty: %d" % relative_disty)
 
     angle = math.atan2(relative_disty, relative_distx)
     angle_degree = math.degrees(angle)
@@ -122,6 +122,7 @@ def main():
     angle_goal = 0
     distance_gop = 0
     angle_gop = 0
+    area = 0
 
     while True:
         clock.tick()
@@ -134,12 +135,17 @@ def main():
             for blob in blob_ball:
                 distance_b = distance_ball(blob)
                 angle_ball = -(angle(blob) - 180)
+                area = blob.area()
+                print("Area: ", area)
+                if area < 510:
+                    distance_b = 0
+                    angle_ball = 0
                 if angle_ball < 5 and angle_ball > -7:
                     angle_ball = 0
-                elif distance_b < 30 and distance_b > -30:
+                elif distance_b < 15 and distance_b > -30:
                     angle_ball = 0
-                print("Distance Ball: %d" % distance_b)
-                print("Angle Ball: %d" % angle_ball)
+                #print("Distance Ball: %d" % distance_b)
+                #print("Angle Ball: %d" % angle_ball)
 
         elif not blob_ball:
             distance_b = 0
