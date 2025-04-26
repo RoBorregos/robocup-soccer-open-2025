@@ -47,6 +47,7 @@ const int servo_min = 1000;
 const int servo_mid = 1700;
 const int servo_max = 2000;
 int time_shoot = 2000;
+float angular_tolerance = 10.0; 
 String serial1_line = "";
 String serial2_line = "";
 uint8_t front[2] = {A8, A9};
@@ -112,12 +113,16 @@ if (cathethus < 90){
     double differential_ball = error_ball * 0.001; //Calcular el error diferecial
     ponderated_ball = (ball_angle + differential_ball);
     setpoint = ponderated_ball;
+    error = bno.analize_error(setpoint,current_yaw);
+    speed_w = pid.Calculate(setpoint, error);   
     motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
   } else if (dribbler_ball_seen){
     double error_dribbler = dribbler_angle + current_yaw;
     double differential_dribbler = error_dribbler * 0.001; //Calcular el error diferecial
     ponderated_dribbler = -(dribbler_angle + differential_dribbler);
     setpoint = ponderated_dribbler;
+    error = bno.analize_error(setpoint,current_yaw);
+    speed_d = pid2.Calculate(setpoint, error);
     motors.MoveMotorsImu(ponderated_dribbler, abs(speed_ball), speed_d);
     if (ball_captured){
       if (goal_seen && goal_angle != 0){
@@ -125,6 +130,8 @@ if (cathethus < 90){
         double differential_goal = error_goal * 0.001; //Calcular el error diferecial
         ponderated_goal = (goal_angle + differential_goal);
         setpoint = ponderated_goal;
+        error = bno.analize_error(setpoint,current_yaw);
+        speed_d = pid2.Calculate(setpoint, error);
         motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
       } else if (goal_angle == 0 && goal_seen){
         motors.StopMotors();
@@ -135,33 +142,48 @@ if (cathethus < 90){
     }
   }  
       } else {
-        if (own_seen && own_angle != 0){
+        if (own_seen){
+          float adjusted_angle = own_angle + 180.0f;
+
+          if (adjusted_angle >= 360.0f) {
+            adjusted_angle -= 360.0f; // Asegurarse de que el ángulo esté en el rango [0, 360)
+          }
+          setpoint = adjusted_angle;
+          double error_adjustment = bno.analize_error(setpoint, current_yaw);
+          speed_w = pid.Calculate(setpoint, error_adjustment);
           double error_own= own_angle + current_yaw;
+
+          if (fabs(error_own) > angular_tolerance) {
+            motors.MoveMotorsImu(0, 0, speed_w);  // Girar robor a que se alinee con el frente de la cancha
+          } else{
           double differential_own = error_own * 0.001; //Calcular el error diferecial
           ponderated_goal = (own_angle + differential_own);
           setpoint = goal_angle;
+          error = bno.analize_error(setpoint,current_yaw);
+          speed_w = pid.Calculate(setpoint, error);
           motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
+          }
         } 
       }
     
   
   /*
-  if (sensors.isLineDetected(FRONT) == true) {
-  Serial.println("Line detected in front!");
-  motors.SetAllSpeeds(120);
-  motors.MoveBackward();
-  delay(150);
-} else if (sensors.isLineDetected(LEFT) == true) {
-    Serial.println("Line detected on left!");
+    if (sensors.isLineDetected(FRONT) == true) {
+    Serial.println("Line detected in front!");
     motors.SetAllSpeeds(120);
-    motors.MoveRight();
+    motors.MoveBackward();
     delay(150);
-  } else if (sensors.isLineDetected(RIGHT) == true) {
-    Serial.println("Line detected on right!");
-    motors.SetAllSpeeds(120);
-    motors.MoveLeft();
-    delay(150);
-  }
+  } else if (sensors.isLineDetected(LEFT) == true) {
+      Serial.println("Line detected on left!");
+      motors.SetAllSpeeds(120);
+      motors.MoveRight();
+      delay(150);
+    } else if (sensors.isLineDetected(RIGHT) == true) {
+      Serial.println("Line detected on right!");
+      motors.SetAllSpeeds(120);
+      motors.MoveLeft();
+      delay(150);
+    }
   */
     }
 
@@ -214,7 +236,7 @@ void processSerial1(String line) {
 
 void processSerial2(String line) {
   float dist, ang, g_ang, g_dist, o_ang, o_dist;
-  int parsed = sscanf(line.c_str(), "%f %f %f %f %f %f", &dist, &ang, &g_ang, &g_dist, %o_ang, %o_dist);
+  int parsed = sscanf(line.c_str(), "%f %f %f %f %f %f", &dist, &ang, &g_ang, &g_dist, &o_ang, &o_dist);
   if (parsed == 6) {
     ball_distance = dist;
     //Serial.print("ball_distance 2 ");
