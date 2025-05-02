@@ -250,10 +250,10 @@ void processSerial2(String line) {
     goal_angle = g_ang;
     //Serial.print("goal angle ");
     //Serial.println(goal_angle);
-    own_distance = %o_dist;
+    own_distance = o_dist;
     Serial.print("own distance ");
     Serial.println(own_distance);
-    own_angle = %o_ang;
+    own_angle = o_ang;
     Serial.print("own angle ");
     Serial.println(own_angle);
     open_ball_seen = !(dist == 0.0f || ang == 0.0f);
@@ -271,6 +271,6 @@ float calculateCathetus(float a, float b, float angle, float angle2) {
     adjusted_angle -= 360; // Asegurarse de que el ángulo esté en el rango [-180, 180)
   }
   float angle_rad = angle * M_PI / 180.0; // Convertir a radianes
-  float cathethus = sqrtf(a^2 + b^2 - 2 * a * b * cos(angle_rad));
+  float cathethus = sqrtf(a*a + b*b - 2 * a * b * cos(angle_rad));
   return cathethus;
 }
