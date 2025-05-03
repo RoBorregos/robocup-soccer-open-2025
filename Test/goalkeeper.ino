@@ -4,6 +4,7 @@
 #include "Bno.h"
 #include "PID.h"
 #include "Photo.h"
+#include "PhotoSensorsMux.h"
 #include <cmath>
 //Incluir la libreria del servo para el Kicker
 
@@ -54,7 +55,11 @@ uint8_t front[2] = {A8, A9};
 uint8_t right[4] = {A3, A12, A13, A14};
 uint8_t left[4] = {A6, A15, A16, A17};
 uint8_t back[4] = {A0, A1, A2, A7};
-
+unsigned long lineDetectedTime = 0;
+const unsigned long reverseDuration = 150;
+bool isAvoidingLine = false;
+enum LineDirection { NONE, FRONT, LEFT, RIGHT, BACK };
+LineDirection lastDirection = NONE;
 
 BNO055 bno;
 Servo dribbler;
@@ -165,27 +170,48 @@ if (cathethus < 90){
           }
         } 
       }
-    
-  
-  /*
-    if (sensors.isLineDetected(FRONT) == true) {
-    Serial.println("Line detected in front!");
-    motors.SetAllSpeeds(120);
-    motors.MoveBackward();
-    delay(150);
-  } else if (sensors.isLineDetected(LEFT) == true) {
-      Serial.println("Line detected on left!");
+       
+void checkLineSensors() {
+  if (!isAvoidingLine) {
+    if (PhotoSensorsMux::isLineDetected(FRONT)) {
+      Serial.println("Line detected in front!");
       motors.SetAllSpeeds(120);
-      motors.MoveRight();
-      delay(150);
-    } else if (sensors.isLineDetected(RIGHT) == true) {
-      Serial.println("Line detected on right!");
-      motors.SetAllSpeeds(120);
-      motors.MoveLeft();
-      delay(150);
+      motors.MoveBackward();
+      isAvoidingLine = true;
+      lastDirection = FRONT;
+      lineDetectedTime = millis();
+      } else if (PhotoSensorsMux::isLineDetected(LEFT)) {
+        Serial.println("Line detected on left!");
+        motors.SetAllSpeeds(120);
+        motors.MoveRight();
+        isAvoidingLine = true;
+        lastDirection = LEFT;
+        lineDetectedTime = millis();
+        } else if (PhotoSensorsMux::isLineDetected(RIGHT)) {
+          Serial.println("Line detected on right!");
+          motors.SetAllSpeeds(120);
+          motors.MoveLeft();
+          isAvoidingLine = true;
+          lastDirection = RIGHT;
+          lineDetectedTime = millis();
+          } else if (PhotoSensorsMux::isLineDetected(BACK)) {
+            Serial.println("Line detected on back!");
+            motors.SetAllSpeeds(120);
+            motors.MoveBackward();
+            isAvoidingLine = true;
+            lastDirection = BACK;
+            lineDetectedTime = millis();
+          }
+  } else {
+  // Check if enough time has passed to stop avoiding
+    if (millis() - lineDetectedTime >= reverseDuration) {
+    isAvoidingLine = false;
+    lastDirection = NONE;
     }
-  */
-    }
+  }
+}
+      
+
 
 
 
