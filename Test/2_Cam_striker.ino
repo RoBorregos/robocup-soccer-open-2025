@@ -153,30 +153,42 @@ void loop() {
 
 
 void checkLineSensors() {
-  if (!isAvoidingLine) {
-    if (sensors.isLineDetected(FRONT)) {
-      Serial.println("Line detected in front!");
-      motors.SetAllSpeeds(120);
+  current_millis = millis();
+  // Only check for new lines if not already avoiding
+  if (sensors.isLineDetected(FRONT)) {
+      lineDetectedTime = current_millis;
+      isAvoidingLine = true;
+      motors.SetAllSpeeds(100);
       motors.MoveBackward();
-      delay(150);
-      } else if (sensors.isLineDetected(LEFT)) {
-        Serial.println("Line detected on left!");
-        motors.SetAllSpeeds(120);
-        motors.MoveRight();
-        delay(150);
-        } else if (sensors.isLineDetected(RIGHT)) {
-          Serial.println("Line detected on right!");
-          motors.SetAllSpeeds(120);
-          motors.MoveLeft();
-          delay(150);
-          } else if (sensors.isLineDetected(BACK)) {
-            Serial.println("Line detected on back!");
-            motors.SetAllSpeeds(120);
-            motors.MoveForward();
-            delay(150);
-          }
-        }
+  } 
+  else if (sensors.isLineDetected(LEFT)) {
+      lineDetectedTime = current_millis;
+      isAvoidingLine = true;
+      motors.SetAllSpeeds(100);
+      motors.MoveRight();
+  } 
+  /*else if (sensors.isLineDetected(RIGHT)) {
+      lineDetectedTime = current_millis;
+      isAvoidingLine = true;
+      motors.SetAllSpeeds(80);
+      motors.MoveLeft();
+  }*/
+  else if (sensors.isLineDetected(BACK)) {
+      lineDetectedTime = current_millis;
+      isAvoidingLine = true;
+      motors.SetAllSpeeds(100);
+      motors.MoveForward();
+  }
+  
+  // If currently avoiding a line
+  if (isAvoidingLine) {
+      // Check if 500ms have passed
+      if (current_millis - lineDetectedTime >= correctionTime) {
+          isAvoidingLine = false;  // Just exit avoidance mode
       }
+      return;  // Continue avoidance until time expires
+  }
+}
 
 void readSerialLines() {
   // Leer desde Serial1
