@@ -154,43 +154,29 @@ void loop() {
 
 void checkLineSensors() {
   if (!isAvoidingLine) {
-    if (PhotoSensorsMux::isLineDetected(FRONT)) {
+    if (sensors.isLineDetected(FRONT)) {
       Serial.println("Line detected in front!");
       motors.SetAllSpeeds(120);
       motors.MoveBackward();
-      isAvoidingLine = true;
-      lastDirection = FRONT;
-      lineDetectedTime = millis();
-      } else if (PhotoSensorsMux::isLineDetected(LEFT)) {
+      delay(150);
+      } else if (sensors.isLineDetected(LEFT)) {
         Serial.println("Line detected on left!");
         motors.SetAllSpeeds(120);
         motors.MoveRight();
-        isAvoidingLine = true;
-        lastDirection = LEFT;
-        lineDetectedTime = millis();
-        } else if (PhotoSensorsMux::isLineDetected(RIGHT)) {
+        delay(150);
+        } else if (sensors.isLineDetected(RIGHT)) {
           Serial.println("Line detected on right!");
           motors.SetAllSpeeds(120);
           motors.MoveLeft();
-          isAvoidingLine = true;
-          lastDirection = RIGHT;
-          lineDetectedTime = millis();
-          } else if (PhotoSensorsMux::isLineDetected(BACK)) {
+          delay(150);
+          } else if (sensors.isLineDetected(BACK)) {
             Serial.println("Line detected on back!");
             motors.SetAllSpeeds(120);
-            motors.MoveBackward();
-            isAvoidingLine = true;
-            lastDirection = BACK;
-            lineDetectedTime = millis();
+            motors.MoveForward();
+            delay(150);
           }
-  } else {
-  // Check if enough time has passed to stop avoiding
-    if (millis() - lineDetectedTime >= reverseDuration) {
-    isAvoidingLine = false;
-    lastDirection = NONE;
-    }
-  }
-}   
+        }
+      }
 
 void readSerialLines() {
   // Leer desde Serial1
