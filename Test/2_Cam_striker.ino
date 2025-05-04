@@ -3,15 +3,17 @@
 #include "constantes.h"
 #include "Bno.h"
 #include "PID.h"
-#include "Photo.h"
+#include "PhotoSensorsMux.h"
 #include <cmath>
-//Incluir la libreria del servo para el Kicker
 
+const uint8_t selectPins[3] = {16, 15, 14};  // S0, S1, S2
+const uint8_t muxPins[4] = {A6, A7, A9, A14}; // Pines de salida MUX
 
 float bno_angle = 0;
 unsigned long start_millis;
 unsigned long current_millis;
 unsigned long previous_millis = 0;
+float cathethus = 0;
 float setpoint = 0 ;
 float translation_angle = 0;
 float adjust_angle = 0;
@@ -28,6 +30,8 @@ float last_distance = 0;
 float last_angle = 0;
 float distance = 0;
 float goal_distance = 0;
+float own_angle = 0;
+float own_distance = 0;
 float distance_pixels = 0;
 float differential_ball = 0;
 float differential_goal = 0;
@@ -36,22 +40,22 @@ bool open_ball_seen = false;
 bool dribbler_ball_seen = false;
 bool goal_seen = false;
 bool ball_captured = false;
+bool own_seen = false;
 const int BUFFER_SIZE = 100;
 char buffer1[BUFFER_SIZE];
 char buffer2[BUFFER_SIZE];
 const int servo_min = 1000;
-const int servo_mid = 1500;
+const int servo_mid = 1700;
 const int servo_max = 2000;
 int time_shoot = 2000;
+float angular_tolerance = 10.0; 
 String serial1_line = "";
 String serial2_line = "";
-uint8_t front[2] = {A8, A9};
-uint8_t right[4] = {A3, A12, A13, A14};
-uint8_t left[4] = {A6, A15, A16, A17};
-uint8_t back[4] = {A0, A1, A2, A7};
-
-
-
+unsigned long lineDetectedTime = 0;
+const unsigned long reverseDuration = 150;
+bool isAvoidingLine = false;
+enum LineDirection { NONE, FRONTE, LEFTE, RIGHTE, BACKE };
+LineDirection lastDirection = NONE;
 BNO055 bno;
 Servo dribbler;
 //Photo photo;
@@ -67,8 +71,21 @@ Motors motors(
     MOTOR3_PWM, MOTOR3_IN1, MOTOR3_IN2,
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
     
-PhotoSensors sensors(front, left, right, back);
+PhotoSensorsMux::Sensor front[8] = {
+  {1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}
+};
+PhotoSensorsMux::Sensor left[8] = {
+  {2, 0}, {2, 1}, {2, 2}, {2, 3}, {2, 5}, {2, 6}, {2, 7}
+};
+/*
+PhotoSensorsMux::Sensor right[8] = {
+  {2, 0}, {2, 1}, {2, 2}, {2, 3}, {2, 4}, {2, 5}, {2, 6}, {2, 7}
+};*/
+PhotoSensorsMux::Sensor back[8] = {
+  {3, 2}, {3, 4}, {3, 5}, {3, 6}, {3, 7}
+};
 
+PhotoSensorsMux sensors(selectPins, muxPins);
 
 void setup() {
   Serial.begin(115200);
@@ -78,12 +95,6 @@ void setup() {
   dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
   bno.InitializeBNO(); 
- 
-  sensors.setThreshold(FRONT, 430);
-  sensors.setThreshold(LEFT,  700);
-  sensors.setThreshold(RIGHT, 700);
-  //sensors.setThreshold(BACK,  610);
-
   delay(1000);
 
 }
@@ -137,26 +148,49 @@ void loop() {
         motors.StopMotors();
       }
     }
-  
-  if (sensors.isLineDetected(FRONT) == true) {
-  Serial.println("Line detected in front!");
-  motors.SetAllSpeeds(120);
-  motors.MoveBackward();
-  delay(150);
-} else if (sensors.isLineDetected(LEFT) == true) {
-    Serial.println("Line detected on left!");
-    motors.SetAllSpeeds(120);
-    motors.MoveRight();
-    delay(150);
-  } else if (sensors.isLineDetected(RIGHT) == true) {
-    Serial.println("Line detected on right!");
-    motors.SetAllSpeeds(120);
-    motors.MoveLeft();
-    delay(150);
-  }
+    
 }
 
 
+void checkLineSensors() {
+  if (!isAvoidingLine) {
+    if (PhotoSensorsMux::isLineDetected(FRONT)) {
+      Serial.println("Line detected in front!");
+      motors.SetAllSpeeds(120);
+      motors.MoveBackward();
+      isAvoidingLine = true;
+      lastDirection = FRONT;
+      lineDetectedTime = millis();
+      } else if (PhotoSensorsMux::isLineDetected(LEFT)) {
+        Serial.println("Line detected on left!");
+        motors.SetAllSpeeds(120);
+        motors.MoveRight();
+        isAvoidingLine = true;
+        lastDirection = LEFT;
+        lineDetectedTime = millis();
+        } else if (PhotoSensorsMux::isLineDetected(RIGHT)) {
+          Serial.println("Line detected on right!");
+          motors.SetAllSpeeds(120);
+          motors.MoveLeft();
+          isAvoidingLine = true;
+          lastDirection = RIGHT;
+          lineDetectedTime = millis();
+          } else if (PhotoSensorsMux::isLineDetected(BACK)) {
+            Serial.println("Line detected on back!");
+            motors.SetAllSpeeds(120);
+            motors.MoveBackward();
+            isAvoidingLine = true;
+            lastDirection = BACK;
+            lineDetectedTime = millis();
+          }
+  } else {
+  // Check if enough time has passed to stop avoiding
+    if (millis() - lineDetectedTime >= reverseDuration) {
+    isAvoidingLine = false;
+    lastDirection = NONE;
+    }
+  }
+}   
 
 void readSerialLines() {
   // Leer desde Serial1
@@ -187,13 +221,16 @@ void processSerial1(String line) {
   int parsed = sscanf(line.c_str(), "%f %f", &dist, &ang);
   if (parsed == 2) {
     dribbler_distance = dist;
-    Serial.print("ball_distance 1 ");
-    Serial.println(dribbler_distance);
+    //Serial.print("ball_distance 1 ");
+    //Serial.println(dribbler_distance);
     dribbler_angle = ang;
-    Serial.print("Angulo 1 ");
-    Serial.println(dribbler_angle);
-   dribbler_ball_seen = !(dist == 0.0f || ang == 0.0f); // Mejor expresado
+    //Serial.print("Angulo 1 ");
+    //Serial.println(dribbler_angle);
+    dribbler_ball_seen = !(dist == 0.0f || ang == 0.0f); // Mejor expresado
     ball_captured = (dribbler_distance <= 20.0f && dribbler_angle == 0.0f && dribbler_distance > 0); // Actualiza SIEMPRE
+    if (ball_captured) {
+      Serial.println("Pelota capturada");
+    }
   } else {
     dribbler_ball_seen = false;
     ball_captured = false;
@@ -201,20 +238,29 @@ void processSerial1(String line) {
 }
 
 void processSerial2(String line) {
-  float dist, ang, g_ang, g_dist;
-  int parsed = sscanf(line.c_str(), "%f %f %f %f", &dist, &ang, &g_ang, &g_dist);
-  if (parsed == 4) {
+  float dist, ang, g_ang, g_dist, o_ang, o_dist;
+  int parsed = sscanf(line.c_str(), "%f %f %f %f %f %f", &dist, &ang, &g_ang, &g_dist, &o_ang, &o_dist);
+  if (parsed == 6) {
     ball_distance = dist;
-    Serial.print("ball_distance 2 ");
+    Serial.print("ball_distance  ");
     Serial.println(ball_distance);
     ball_angle = ang;
-    Serial.print("ball_distance 2 ");
+    Serial.print(" angle 2 ");
     Serial.println(ball_angle);
-    goal_angle = g_ang;
     goal_distance = g_dist;
-    open_ball_seen = (dist != 0 && ang != 0);
-    goal_seen = (g_ang != 0 && g_dist != 0);
+    //Serial.print("goal distance ");
+    //Serial.println(goal_distance);
+    goal_angle = g_ang;
+    //Serial.print("goal angle ");
+    //Serial.println(goal_angle);
+    own_distance = o_dist;
+    //Serial.print("own distance ");
+    //Serial.println(own_distance);
+    own_angle = o_ang;
+    //Serial.print("own angle ");
+    //Serial.println(own_angle);
+    open_ball_seen = !(dist == 0.0f || ang == 0.0f);
+    goal_seen = !(g_ang == 0.0f || g_dist == 0.0f);
+    own_seen = !(o_ang == 0 || o_dist != 0.0f);
   }
 }
-
-
