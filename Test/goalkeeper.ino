@@ -64,7 +64,8 @@ Servo dribbler;
 float cathetus = 0;
 
 //PID pid(2, 0.00735 , 30, 500);
-PID pid(6, 0.01 , 0.6, 600); //0.6, 0.01, 0.6, 200
+PID pid(3, 0.000, 0.0, 900); 
+//PID pid(0.1, 0.000, 0.0, 200); //0.6, 0.01, 0.6, 200
 PID pid2(5, 0.01 , 0.6, 500);
 
 
@@ -98,7 +99,7 @@ void setup() {
   dribbler.writeMicroseconds(servo_min);*/
   motors.InitializeMotors();
   bno.InitializeBNO(); 
-  delay(1000);
+  //delay(1000);
 
 }
 
@@ -107,38 +108,51 @@ void loop() {
   //dribbler.writeMicroseconds(servo_mid);
   bno.GetBNOData();
   double current_yaw = bno.GetYaw();
-  readSerialLines();
+  Serial.print("BNO: ");
+  Serial.println(current_yaw);
+  //readSerialLines();
 
-  
-  double error = bno.analize_error(setpoint,current_yaw);
+  double error = bno.analize_error(setpoint, current_yaw);
   double speed_w = pid.Calculate(setpoint, error);
   double speed_d = pid2.Calculate(setpoint, error); //Checar si esta bien asi o hay que invertir los valores y aplicar la logica para los diversos casos
-  double speed_goal = 150;
-  double speed_ball = 150;
-  
-  checkLineSensors();
-  calculateCathetus(ball_distance, own_distance ,ball_angle, own_angle);
-  //motors.MoveMotorsImu(0, 150, speed_w);
+  Serial.print("Correccion: ");
+  Serial.println(speed_w);
 
-  if (cathetus < 50){
-    if (open_ball_seen && !dribbler_ball_seen){
+  double speed_goal = 110;
+  double speed_ball = 125;
+
+  //motors.MoveMotorsImu(45,speed_ball, speed_w);
+  
+  //checkLineSensors();
+  //calculateCathetus(ball_distance, own_distance ,ball_angle, own_angle);
+
+  if (open_ball_seen && !dribbler_ball_seen){
       double error_ball = ball_angle + current_yaw;
-      double differential_ball = error_ball * 0.001; //Calcular el error diferecial
+      double differential_ball = error_ball * 0.1; //Calcular el error diferecial
       ponderated_ball = (ball_angle + differential_ball);
+      //Serial.print("Angulo ponderado: ");
+      //Serial.println(ponderated_ball);
       //setpoint = ponderated_ball;
       motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
     } else if (dribbler_ball_seen){
       double error_dribbler = dribbler_angle + current_yaw;
-      double differential_dribbler = error_dribbler * 0.001; //Calcular el error diferecial
-      ponderated_dribbler = -(dribbler_angle + differential_dribbler);
-      setpoint = ponderated_dribbler;
+      double differential_dribbler = error_dribbler * 0.1; //Calcular el error diferecial
+      ponderated_dribbler = -(dribbler_angle - differential_dribbler);
+      //Serial.print("Ponderated dribbler: ");
+      //Serial.println(ponderated_dribbler);
+      //setpoint = ponderated_dribbler;
+      //Serial.print("Distancia: ");
+      //Serial.println(dribbler_distance);
       motors.MoveMotorsImu(ponderated_dribbler, abs(speed_ball), speed_d);
       if (ball_captured){
+        Serial.println("Pelota capturada! ");
         if (goal_seen && goal_angle != 0){
           double error_goal= goal_angle + current_yaw;
-          double differential_goal = error_goal * 0.001; //Calcular el error diferecial
+          double differential_goal = error_goal * 0.1; //Calcular el error diferecial
           ponderated_goal = (goal_angle + differential_goal);
-          setpoint = ponderated_goal;
+          Serial.print("Ponderated goal: ");
+          Serial.println(ponderated_goal);
+          //setpoint = ponderated_goal;
           motors.MoveMotorsImu(ponderated_goal, abs(speed_goal), speed_w);
         } else if (goal_angle == 0 && goal_seen){
           motors.StopMotors();
@@ -148,6 +162,9 @@ void loop() {
         }
       }
     }
+    /*
+  if (cathetus < 50){
+    
   } else {
       if (own_seen){
           float adjusted_angle = own_angle + 180.0f;
@@ -172,6 +189,7 @@ void loop() {
       }
     }
   } 
+  */
 }
 
 
@@ -243,13 +261,13 @@ void processSerial1(String line) {
   int parsed = sscanf(line.c_str(), "%f %f", &dist, &ang);
   if (parsed == 2) {
     dribbler_distance = dist;
-    //Serial.print("ball_distance 1 ");
-    //Serial.println(dribbler_distance);
+    Serial.print("ball_distance 1 ");
+    Serial.println(dribbler_distance);
     dribbler_angle = ang;
-    //Serial.print("Angulo 1 ");
-    //Serial.println(dribbler_angle);
-    dribbler_ball_seen = !(dist == 0.0f || ang == 0.0f); // Mejor expresado
-    ball_captured = (dribbler_distance <= 20.0f && dribbler_angle == 0.0f && dribbler_distance > 0); // Actualiza SIEMPRE
+    Serial.print("Angulo 1 ");
+    Serial.println(dribbler_angle);
+    dribbler_ball_seen = !(dist == 0.0f && ang == 0.0f); // Mejor expresado
+    ball_captured = (dribbler_distance <= 35.0f && dribbler_angle == 0.0f); // Actualiza SIEMPRE
     if (ball_captured) {
       Serial.println("Pelota capturada");
     }
@@ -264,17 +282,17 @@ void processSerial2(String line) {
   int parsed = sscanf(line.c_str(), "%f %f %f %f %f %f", &dist, &ang, &g_dist, &g_ang, &o_dist, &o_ang);
   if (parsed == 6) {
     ball_distance = dist;
-    Serial.print("ball_distance  ");
-    Serial.println(ball_distance);
+    //Serial.print("ball_distance  ");
+    //Serial.println(ball_distance);
     ball_angle = ang;
-    Serial.print("angle 2 ");
-    Serial.println(ball_angle);
+    //Serial.print("angle 2 ");
+    //Serial.println(ball_angle);
     goal_distance = g_dist;
-    Serial.print("goal distance ");
-    Serial.println(goal_distance);
+    //Serial.print("goal distance ");
+    //Serial.println(goal_distance);
     goal_angle = g_ang;
-    Serial.print("goal angle ");
-    Serial.println(goal_angle);
+    //Serial.print("goal angle ");
+    //Serial.println(goal_angle);
     own_distance = o_dist;
     //Serial.print("own distance ");
     //Serial.println(own_distance);
