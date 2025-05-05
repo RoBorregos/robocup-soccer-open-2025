@@ -12,7 +12,7 @@ from pyb import UART
 
 uart = UART(3, 115200, timeout_char=0)
 uart.init(115200, bits=8, parity=None, stop=1)
-threshold = (6, 98, 13, 127, 14, 78) #(0, 99, -117, 127, 15, 127) #(49, 84, 16, 39, 6, 100)#9, 93, 26, 92, -34, 78)(43, 100, 14, 39, -53, 76) (16, 100, 12, 127, -11, 127) (0, 100, -128, 127, -128, 127)
+threshold = (35, 88, 90, 30, -52, 112) #(0, 0, 0,0, 15, 127)#(6, 98, 13, 127, 14, 78) # #(49, 84, 16, 39, 6, 100)#9, 93, 26, 92, -34, 78)(43, 100, 14, 39, -53, 76) (16, 100, 12, 127, -11, 127) (0, 100, -128, 127, -128, 127)
 threshold_2 = (0, 35, 33, -10, -122, -14) #Azul
 threshold_1 = (50, 73, -55, 48, 8, 28) #(4, 94, 29, 46, 4, 45) (99, 25, 20, -83, 127, 40) Amarillo esta bien para 0,0,0
 
@@ -23,7 +23,7 @@ threshold_1 = (50, 73, -55, 48, 8, 28) #(4, 94, 29, 46, 4, 45) (99, 25, 20, -83,
 # X and Y coordinates for a 50° of Dribbler cam
 
 X_CENTER = 222 #162 #168 #157 #182
-Y_CENTER = 166 #172 #177 #180 #175 #166
+Y_CENTER = 152 #172 #177 #180 #175 #166
 
 # X and Y coordinates for a 60° of Dribbler cam
 
@@ -40,17 +40,18 @@ def initialize_open():
     sensor.set_framesize(sensor.QVGA)
     print("Final Gain Ceiling:", sensor.get_gain_db())#Checar el valor de gain para H7
     print("Final Exposure:", sensor.get_exposure_us()) #Checar el valor de exposicion H7
-    sensor.skip_frames(time=4000)
+    sensor.skip_frames(time=3000)
     sensor.set_auto_gain(False)
     sensor.set_gainceiling(16)
-    sensor.set_auto_whitebal(False)  # must be turned off for color tracking
-    sensor.set_auto_exposure(False, exposure_us=4000) #100
-    sensor.set_brightness(-5)
+    sensor.set_auto_whitebal(False)
+    sensor.set_auto_exposure(False, exposure_us=25000)
+    #Sin luz natural usar exposure_us=35000
+    sensor.set_brightness(1)
     sensor.set_hmirror(True)
     sensor.set_vflip(False)
     sensor.set_transpose(True)
-    sensor.set_contrast(-3)
-    sensor.set_saturation(-3)
+    sensor.set_contrast(-5)
+    sensor.set_saturation(-6)
 
 
 def find_ball(img):
@@ -102,8 +103,8 @@ def distance_goal(blob):
 def angle(blob):
     relative_distx = blob.cx() - X_CENTER
     relative_disty = blob.cy() - Y_CENTER
-    print("Relative Distx: %d" % relative_distx)
-    print("Relative Disty: %d" % relative_disty)
+    #print("Relative Distx: %d" % relative_distx)
+    #print("Relative Disty: %d" % relative_disty)
 
     angle = math.atan2(relative_disty, relative_distx)
     angle_degree = math.degrees(angle)
@@ -127,6 +128,12 @@ def main():
     while True:
         clock.tick()
         img = sensor.snapshot()
+
+        X_CENTER = 222 #162 #168 #157 #182
+        Y_CENTER = 152 #172 #177 #180 #175 #166
+
+        img.draw_cross(X_CENTER, Y_CENTER, color=(255, 255, 255))
+
         blob_ball = find_ball(img)
         #blob_goal = find_goal(img)
         #blob_goal_opp = find_goal_opp(img)
@@ -142,7 +149,7 @@ def main():
                     angle_ball = 0
                 if angle_ball < 5 and angle_ball > -7:
                     angle_ball = 0
-                elif distance_b < 15 and distance_b > -30:
+                elif distance_b < 60:
                     angle_ball = 0
                 #print("Distance Ball: %d" % distance_b)
                 #print("Angle Ball: %d" % angle_ball)
