@@ -43,6 +43,7 @@ bool dribbler_ball_seen = false;
 bool goal_seen = false;
 bool ball_captured = false;
 bool own_seen = false;
+bool own_aligned = false;
 const int BUFFER_SIZE = 100;
 char buffer1[BUFFER_SIZE];
 char buffer2[BUFFER_SIZE];
@@ -121,11 +122,11 @@ void loop() {
   double speed_goal = 110;
   double speed_ball = 125;
 
-  //motors.MoveMotorsImu(45,speed_ball, speed_w);
+  motors.MoveMotorsImu(45,speed_ball, speed_w);
   
   //checkLineSensors();
   //calculateCathetus(ball_distance, own_distance ,ball_angle, own_angle);
-
+  /*
   if (open_ball_seen && !dribbler_ball_seen){
       double error_ball = ball_angle + current_yaw;
       double differential_ball = error_ball * 0.1; //Calcular el error diferecial
@@ -179,7 +180,7 @@ void loop() {
           double error_own= own_angle + current_yaw;
           if (fabs(error_own) > angular_tolerance) {
             motors.MoveMotorsImu(0, 0, speed_w); // Girar robor a que se alinee con el frente de la cancha
-          } else{
+          } else {
           double differential_own = error_own * 0.001; //Calcular el error diferecial
           ponderated_goal = (own_angle + differential_own);
           setpoint = 0;
@@ -302,6 +303,7 @@ void processSerial2(String line) {
     open_ball_seen = !(dist == 0.0f || ang == 0.0f);
     goal_seen = !(g_ang == 0.0f || g_dist == 0.0f);
     own_seen = !(o_ang == 0 || o_dist != 0.0f);
+    own_aligned = (own_angle > 170.f || own_angle < -170.0f);
   }
 }
 
