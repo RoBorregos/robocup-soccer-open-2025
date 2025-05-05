@@ -52,7 +52,7 @@ float angular_tolerance = 10.0;
 String serial1_line = "";
 String serial2_line = "";
 unsigned long lineDetectedTime = 0;
-const unsigned long reverseDuration = 150;
+const unsigned long correctionTime = 150;
 bool isAvoidingLine = false;
 enum LineDirection { NONE, FRONTE, LEFTE, RIGHTE, BACKE };
 LineDirection lastDirection = NONE;
@@ -153,40 +153,47 @@ void loop() {
 
 
 void checkLineSensors() {
-  current_millis = millis();
-  // Only check for new lines if not already avoiding
-  if (sensors.isLineDetected(FRONT)) {
-      lineDetectedTime = current_millis;
+  // Check all directions
+  bool frontDetected = sensors.isLineDetected(FRONT);
+  bool leftDetected = sensors.isLineDetected(LEFT);
+  bool rightDetected = sensors.isLineDetected(RIGHT);
+  bool backDetected = sensors.isLineDetected(BACK);
+
+  // Priority: Front > Back > Sides (adjust as needed)
+  if (frontDetected) {
+      lineDetectedTime = millis();
       isAvoidingLine = true;
       motors.SetAllSpeeds(100);
       motors.MoveBackward();
+      Serial.println("AVOIDING FRONT LINE (BACKWARD)");
   } 
-  else if (sensors.isLineDetected(LEFT)) {
-      lineDetectedTime = current_millis;
-      isAvoidingLine = true;
-      motors.SetAllSpeeds(100);
-      motors.MoveRight();
-  } 
-  /*else if (sensors.isLineDetected(RIGHT)) {
-      lineDetectedTime = current_millis;
-      isAvoidingLine = true;
-      motors.SetAllSpeeds(80);
-      motors.MoveLeft();
-  }*/
-  else if (sensors.isLineDetected(BACK)) {
-      lineDetectedTime = current_millis;
+  else if (backDetected) {
+      lineDetectedTime = millis();
       isAvoidingLine = true;
       motors.SetAllSpeeds(100);
       motors.MoveForward();
+      Serial.println("AVOIDING BACK LINE (FORWARD)");
   }
-  
-  // If currently avoiding a line
-  if (isAvoidingLine) {
-      // Check if 500ms have passed
-      if (current_millis - lineDetectedTime >= correctionTime) {
-          isAvoidingLine = false;  // Just exit avoidance mode
+  /*else if (leftDetected) {
+      lineDetectedTime = millis();
+      isAvoidingLine = true;
+      motors.SetAllSpeeds(100);
+      motors.MoveRight();  // Or motors.RotateRight() depending on your lib
+      Serial.println("AVOIDING LEFT LINE (RIGHT)");
+  }*/
+  else if (rightDetected) {
+      lineDetectedTime = millis();
+      isAvoidingLine = true;
+      motors.SetAllSpeeds(100);
+      motors.MoveLeft();  // Or motors.RotateLeft()
+      Serial.println("AVOIDING RIGHT LINE (LEFT)");
+  }
+  // Exit condition (checks all possible avoidance cases)
+  else if (isAvoidingLine) {
+      if (millis() - lineDetectedTime >= correctionTime) {
+          isAvoidingLine = false;
+          Serial.println("AVOIDANCE ENDED");
       }
-      return;  // Continue avoidance until time expires
   }
 }
 
