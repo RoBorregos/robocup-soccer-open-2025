@@ -34,12 +34,12 @@ Make sure to have the corresponding dependencies for the teensy 4.1 in your envi
 
 * [OpenMV IDE](https://openmv.io/pages/download?gad_source=1&gad_campaignid=21060752326&gclid=Cj0KCQjww-HABhCGARIsALLO6XzSvYDVwilt_5g-71gYgo7v3H16fBtwGKIoBNfmP_kiLpWk4qG5masaArXuEALw_wcB)
 
-* [Adafuit](https://github.com/adafruit/Adafruit_BNO055/blob/master/Adafruit_BNO055.cpp)
+* [Adafruit](https://github.com/adafruit/Adafruit_BNO055/blob/master/Adafruit_BNO055.cpp)
 
 
 ## Documentation
 
-[Poster for TMR competition]()
+[Poster for TMR competition](https://www.canva.com/design/DAGmp68Unzo/DkLrrPsporc31XkUFyraQg/edit?utm_content=DAGmp68Unzo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ## Install dependencies
 
