@@ -1,6 +1,4 @@
 // Definición de pines de selección y pin de salida del MUX
-
-
 #include "PhotoSensorsMux.h"
 
 
@@ -35,10 +33,3 @@ void loop() {
 }
 
 
-// Función para seleccionar el canal en el MUX
-void selectChannel(int channel) {
-  digitalWrite(selectPins[0], channel & 0x01);         // S0
-  digitalWrite(selectPins[1], (channel >> 1) & 0x01);   // S1
-  digitalWrite(selectPins[2], (channel >> 2) & 0x01);   // S2
-  delay(5);  // Estabilización de la señal
-}
