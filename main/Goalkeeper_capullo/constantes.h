@@ -31,10 +31,4 @@ const uint8_t RECEIVE_GOAL_ANGLE = 'g';
 const uint8_t RECEIVE_GOAL_DISTANCE = 'k';
 const uint8_t RECEIVE_LINE_ANGLE = 'r';
 
-
-extern uint8_t front[2];
-extern uint8_t left[4];
-extern uint8_t right[4];
-extern uint8_t back[4];
-
-#endif  
+#endif 
