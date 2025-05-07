@@ -43,14 +43,3 @@ void loop() {
   Serial.println("-----");
   delay(500);  // Para que no sature el monitor serial
 }
-
-
-
-
-
-
-
-
-
-
-
