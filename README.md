@@ -5,8 +5,8 @@ Code for Robocup Soccer Open 2025 participating with Roborregos
 
 ## Authors
 
-* @emilwinkp
-* @brinez-juan
+* @emilwinkp(https://github.com/emilwinkp)
+* @brinez-juan(https://github.com/brinez-juan)
 
 ## Features
 
@@ -26,7 +26,37 @@ Code for Robocup Soccer Open 2025 participating with Roborregos
 🥅Goal detection: Using merged blobs to encapsulate goal in a rectangle with a corresponding center used as reference for distance and angle measurements. 
 
 ## Structure
-<pre> ROBOCUP-SOCCER-OPEN-2025 ├── Striker └── Vision └── Teensy ├──
+<pre> ROBOCUP-SOCCER-OPEN-2025 
+├── Goalkeeper_capullo
+│ ├── main.cpp
+│ └──libs
+├── Striker_flor
+│ ├── main.cpp
+│ └──libs
+├──libs
+│ ├── Motor
+│ ├── Motores
+│ ├── BNO
+│ ├── PID
+│ ├── PhotoSensorMux
+│ └──Constantes
+├── Vision
+│ ├── OpenMV_H7
+│ ├── OpenMV_M7
+│ ├── Restricted_vision
+│ ├── dribbler_cam
+│ └── dribbler_cam2_control
+├── Test
+│ ├── PhotoMux2_test
+│ ├── PhotoMux
+│ ├── ball_response
+│ ├── channe_selection
+│ ├── dribbler_test
+│ ├── goal_response
+│ ├── test_PID
+│ ├── test_kicker
+│ └── uart_test
+
 </pre>
 ## Tools
 
