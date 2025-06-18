@@ -136,28 +136,14 @@ if (!isAvoidingLine) {
       double error_ball = ball_angle + current_yaw;
       double differential_ball = error_ball * 0.1; //Calcular el error diferecial
       ponderated_ball = (ball_angle + differential_ball);
-      //Serial.print("Angulo ponderado: ");
-      //Serial.println(ponderated_ball);
-      //setpoint = ponderated_ball;
-      //double error = bno.analize_error(setpoint, current_yaw);
-      //Serial.print("error: ");
-      //Serial.println(error);
-      //double speed_w = pid.Calculate(setpoint, error);
-      //Serial.print("Correccion: ");
-      //Serial.println(speed_w);
+      setpoint = ponderated_ball;
       motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
     } else if (dribbler_ball_seen){
       double error_dribbler = dribbler_angle + current_yaw;
       double differential_dribbler = error_dribbler * 0.3; //Calcular el error diferecial
       ponderated_dribbler = -(dribbler_angle - differential_dribbler);
-      //Serial.print("Ponderated dribbler: ");
-      //Serial.println(ponderated_dribbler);
       setpoint = ponderated_dribbler;
-      //Serial.print("Distancia: ");
-      //Serial.println(dribbler_distance);
       motors.MoveMotorsImu(ponderated_dribbler, abs(speed_goal), speed_d);
-      //Serial.print("Correccion ");
-      //Serial.print(speed_d);
       if (ball_captured) {
         //Serial.println("Pelota capturada! ");
         if (goal_seen && goal_angle != 0){
