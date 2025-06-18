@@ -271,8 +271,8 @@ void processSerial1(String line) {
     dribbler_angle = ang;
     //Serial.print("Angulo 1 ");
     //Serial.println(dribbler_angle);
-    //dribbler_ball_seen = (dist != 0 || ang != 0);
-    //ball_captured = (dist <= 30 && ang == 0);
+    dribbler_ball_seen = (dist != 0 || ang != 0);
+    ball_captured = (dist <= 30 && ang == 0);
   }
 }
 
@@ -298,7 +298,7 @@ void processSerial2(String line) {
     own_angle = o_ang;
     //Serial.print("own angle ");
     //Serial.println(own_angle);
-    //open_ball_seen = !(dist == 0.0f || ang == 0.0f);
+    open_ball_seen = !(dist == 0.0f || ang == 0.0f);
     goal_seen = (g_ang != 0.0f || g_dist != 0.0f);
     //own_seen = !(o_ang == 0 || o_dist != 0.0f);
     //own_aligned = (own_angle > 170.f || own_angle < -170.0f);
