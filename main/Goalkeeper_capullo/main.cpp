@@ -8,9 +8,6 @@
 
 #define FILTER_SAMPLES 3
 
-const uint8_t selectPins[3] = {16, 15, 14};  // S0, S1, S2
-const uint8_t muxPins[4] = {A6, A7, A9, A14}; // Pines de salida MUX
-
 float bno_angle = 0;
 unsigned long start_millis;
 unsigned long current_millis;
@@ -64,9 +61,7 @@ Servo dribbler;
 
 
 //PID pid(2, 0.00735 , 30, 500);
-PID pid(0.47, 0.001, 0.01, 500); 
-//PID pid(0.1, 0.000, 0.0, 200); //0.6, 0.01, 0.6, 200
-PID pid2(0.001, 0.001 , 1.1, 500);
+PID pid(2, 0.001, 0.1, 300); 
 
 
 Motors motors(
@@ -76,17 +71,17 @@ Motors motors(
     MOTOR4_PWM, MOTOR4_IN1, MOTOR4_IN2);
     
 PhotoSensorsMux::Sensor front[8] = {
-  {1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}
+  {3, 0}, {3, 1}, {3, 3}
 };
 PhotoSensorsMux::Sensor right[8] = {
-  {2, 0}, {2, 1}, {2, 2}, {2, 3}, {2, 5}, {2, 6}, {2, 7}
+  {2, 0}, {2, 3}, {2, 6}, {2, 7}
 };
 
 PhotoSensorsMux::Sensor left[8] = {
-  {0, 1}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 7}
+  {0, 1}
 };
 PhotoSensorsMux::Sensor back[8] = {
-  {3, 2}, {3, 4}, {3, 5}, {3, 6}, {3, 7}
+  {1, 0}, {1, 3}, {1, 6}, {1, 7}
 };
 
 PhotoSensorsMux sensors(selectPins, muxPins); 
@@ -103,7 +98,7 @@ void checkLineSensors() {
       lineDetectedTime = millis();
       isAvoidingLine = true;
       motors.SetAllSpeeds(100);
-      motors.MoveBackward();
+      //motors.MoveBackward();
       Serial.println("AVOIDING FRONT LINE (BACKWARD)");
   } 
   else if (backDetected) {
@@ -113,13 +108,13 @@ void checkLineSensors() {
       motors.MoveForward();
       Serial.println("AVOIDING BACK LINE (FORWARD)");
   }
-  else if (leftDetected) {
+  /*else if (leftDetected) {
       lineDetectedTime = millis();
       isAvoidingLine = true;
       motors.SetAllSpeeds(100);
-      motors.MoveRight();  // Or motors.RotateRight() depending on your lib
+      //motors.MoveRight();  // Or motors.RotateRight() depending on your lib
       Serial.println("AVOIDING LEFT LINE (RIGHT)");
-  }
+  }*/
   else if (rightDetected) {
       lineDetectedTime = millis();
       isAvoidingLine = true;
@@ -135,51 +130,155 @@ void checkLineSensors() {
       }
   }
 }
-
-
-
-
-float calculateCathetus(float a, float b, float angle, float angle2) {
-  //Serial.print("a :");
-  //Serial.println(a);
-  //Serial.print("b :");
-  //Serial.println(b);
-  float adjusted_angle = abs(angle2 - angle);
-  //Serial.print("Angulo ajustado: "); // Ajustar el ángulo
-  //Serial.println(adjusted_angle);
-  if (adjusted_angle > 180) {
-    cathetus_angle = 360 - adjusted_angle; //Normalizar el angulo
-  } else {
-    cathetus_angle = adjusted_angle;
+  
+void processSerial1(String line) {
+  float dist, ang;
+  int parsed = sscanf(line.c_str(), "%f %f", &dist, &ang);
+  if (parsed == 2) {
+    dribbler_distance = dist;
+    //Serial.print("ball_distance 1 ");
+    //Serial.println(dribbler_distance);
+    dribbler_angle = ang;
+    //Serial.print("Angulo 1 ");
+   // Serial.println(dribbler_angle);
+    dribbler_ball_seen = (dist != 0 && ang != 0);
+    ball_captured = (dist <= 20 && ang == 0);
   }
-  //Serial.print("Angulo cateto: ");
-  //Serial.println(cathetus_angle);
-  float angle_rad = cathetus_angle * M_PI / 180.0;
-  //Serial.print("Angulo radianes: ");
-  //Serial.println(angle_rad); // Convertir a radianes
-  double cathetus = sqrt(a*a + b*b - 2 * a * b * cos(angle_rad));
-  //Serial.print("Cateto: ");
-  //Serial.println(cathetus);
-
-  return cathetus;
 }
+
+void processSerial2(String line) {
+  float dist, ang, g_ang, g_dist, o_ang, o_dist;
+  int parsed = sscanf(line.c_str(), "%f %f %f %f %f %f", &dist, &ang, &g_dist, &g_ang, &o_dist, &o_ang);
+  if (parsed == 6) {
+    ball_distance = dist;
+    Serial.print("ball_distance  ");
+    Serial.println(ball_distance);
+    ball_angle = ang;
+    Serial.print("angle 2 ");
+    Serial.println(ball_angle);
+    goal_distance = g_dist;
+    //Serial.print("goal distance ");
+    //Serial.println(goal_distance);
+    goal_angle = g_ang;
+    //Serial.print("goal angle ");
+    //Serial.println(goal_angle);
+    own_distance = o_dist;
+    //Serial.print("own distance ");
+    //Serial.println(own_distance);
+    own_angle = o_ang;
+    //Serial.print("own angle ");
+    //Serial.println(own_angle);
+    open_ball_seen = !(dist == 0.0f || ang == 0.0f);
+    goal_seen = !(g_ang == 0.0f || g_dist == 0.0f);
+    own_seen = !(o_ang == 0 || o_dist != 0.0f);
+    //own_aligned = (own_angle > 170.f || own_angle < -170.0f);
+  }
+}
+
+// Procesamiento robusto para Serial1 (dribbler)
+void readSerialLines() {
+  // Leer desde Serial1
+  while (Serial1.available()) {
+    char c = Serial1.read();
+    //Serial.println(c);
+    if (c == '\n') {
+      processSerial1(serial1_line);
+      serial1_line = "";
+    } else {
+      serial1_line += c;
+    }
+  }
+
+  // Leer desde Serial2
+  while (Serial2.available()) {
+    char c = Serial2.read();
+    Serial.print(c);
+    if (c == '\n') {
+      processSerial2(serial2_line);
+      serial2_line = "";
+      Serial.println("\n");
+    } else {
+      serial2_line += c;
+    }
+  }
+}
+
+
 
 void setup() {
   Serial.begin(115200);
-  analogReadResolution(12);
+  Serial2.begin(115200);
+  Serial1.begin(115200);
+  dribbler.attach(6);
+  dribbler.writeMicroseconds(servo_min);
   motors.InitializeMotors();
+  bno.InitializeBNO(); 
+  //Inicializar Photos
   sensors.begin();
+  analogReadResolution(12);
+  sensors.configureSide(FRONT, front, 3);
+  sensors.configureSide(RIGHT,  right,  4);
+  sensors.configureSide(LEFT, left, 1);
+  sensors.configureSide(BACK,  back,  4);
+  motors.SetAllSpeeds(75);
+  //motors.MoveForward();
 
-  sensors.configureSide(FRONT, front, 7);
-  sensors.configureSide(LEFT,  left,  7);
-  //sensors.configureSide(RIGHT, right, 4);
-  sensors.configureSide(BACK,  back,  5);
+  delay(500);
+
 }
 
-void loop() {
-    motors.SetAllSpeeds(110);
+
+void loop() { 
+  //Comentaste todas las lineas de estados de pelotas menos las del dribbler.
+  //Serial.println(sensors.readSensor(3, 7));
+  //Serial.println(sensors.getRawAverage(RIGHT));
+  //delay(100);
+  //dribbler.writeMicroseconds(servo_mid);
+  bno.GetBNOData();
+  double current_yaw =bno.GetYaw();
+
+  if (millis() - lastVisionUpdate >= visionInterval) {
+        readSerialLines();
+        lastVisionUpdate = millis();
+    }
+
+
+  double error = bno.analize_error(setpoint, current_yaw);
+  double speed_w = pid.Calculate(setpoint, error);
+ 
+
+  double speed_goal = 90;
+  double speed_ball = 90;
+  //checkLineSensors();
+
+  //calculateCathetus(ball_distance, own_distance ,ball_angle, own_angle);
+
+if (!isAvoidingLine) {
+  if (speed_w != 0){
+    if (open_ball_seen && !dribbler_ball_seen){
+      double error_ball = ball_angle + current_yaw;
+      double differential_ball = error_ball * 0.1; //Calcular el error diferecial
+      ponderated_ball = (ball_angle + differential_ball);
+      //Serial.print("Angulo ponderado: ");
+      //Serial.println(ponderated_ball);
+      //setpoint = ponderated_ball;
+      //double error = bno.analize_error(setpoint, current_yaw);
+      //Serial.print("error: ");
+      //Serial.println(error);
+      //double speed_w = pid.Calculate(setpoint, error);
+      //Serial.print("Correccion: ");
+      //Serial.println(speed_w);
+      motors.MoveMotorsImu(ponderated_ball, abs(speed_ball), speed_w);
+    } 
+    } 
+  } 
+  /*if (goal_distance > 100) {
+    motors.StopMotors();
+    /*while (goal_distance > 40) {
+    motors.SetAllSpeeds(100);
     motors.MoveForward();
-}
+    }*/
+  }
 
 
 
